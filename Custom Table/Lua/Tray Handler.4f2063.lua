@@ -33,20 +33,39 @@ function setup()
   end
   --mats = getSeatedPlayers()
   
-
-  print("___" .. #mats .. "____")
   off = 0
   for i,v in pairs(mats) do 
-
+    print(i .. ", " .. (i % 4))
     x = ( ( 44 * math.ceil( (i-2) / 4 ) ) * ( - 1 + ( ( math.ceil( i / 2 ) % 2 ) * 2 ) ) )
     y = 14 - (28 * (i % 2))
-    if #mats > 2 and #mats ~= 4 then
-      if i == #mats - 1 and #mats % 2 == 0 then
-        
+    if i % 2 == 1 then
+      
+    end
+    --Rotate ends to face
+    --TODO If over 8 or 10 have 2 facing ends
+    if #mats > 2 and #mats % 2 ~= 0 then
+      if #mats == i then
+        if i % 4 == 3 then
+          off = 90
+          x = x + 8
+        elseif i % 4 == 1 then
+          off = -90
+          x = x - 8
+        end
+        y = 0
       end
     end
-    if #mats % 2 == 0 and #mats ~= 10 then
-      x = x + 22
+    --Center board cluster
+    if #mats ~= 1 and #mats ~= 10 then
+      if #mats % 2 == 0 then
+        x = x + 22
+      else
+        if #mats % 4 == 3 then
+          x = x - 14
+        else
+          x = x + 14
+        end
+      end
     end
 
     if v ~= "Grey" and v ~= "Black" then
@@ -80,7 +99,7 @@ function circleColor()
 end
 
 function spawnZone(p)
-  --[[
+ --[[
   obj = spawnTray(p,24,0.25,24)
   obj.setLock(true)
 
@@ -90,7 +109,7 @@ function spawnZone(p)
   obj.addAttachment(obj1)
   obj.setLock(false)
   ]]
-
+ --
 
   --print("" .. xSize .. " " .. ySize .. " " .. zSize)
   size = vector(28, 0.25, 44)
@@ -118,153 +137,134 @@ function spawnZone(p)
     snap_to_grid      = true,
     ignore_fog_of_war	= true
   }
-  --Base
+ --Base
   obj = spawnObject(spawnParams)
   obj.setLock(true)
   obj.setColorTint(color(c.r, c.g, c.b, 65/255))
   obj.setScale({x=size.x-1, y=0.25, z=size.z-1})
   obj.setPosition({x=0, y=3, z=0})
-  --Bottom
+ --Bottom
   obj1 = spawnObject(spawnParams)
   obj1.setLock(true)
   obj1.setColorTint(c)
   obj1.setScale({x=1, y=size.y, z=size.z})
   obj1.setPosition({x= 0, y=3, z=-(size.x/2) + 0.5})
-  --Top
+ --Top
   obj2 = spawnObject(spawnParams)
   obj2.setLock(true)
   obj2.setColorTint(c)
   obj2.setScale({x=1, y=size.y, z=size.z})
   obj2.setPosition({x= 0, y=3, z=(size.x/2) - 0.5})
-  --Left
+ --Left
   obj3 = spawnObject(spawnParams)
   obj3.setLock(true)
   obj3.setColorTint(c)
   obj3.setScale({x=size.x, y=size.y, z=1})
   obj3.setPosition({x= (size.z/2) - 0.5, y=3, z=0})
-  --Right
+ --Right
   obj4 = spawnObject(spawnParams)
   obj4.setLock(true)
   obj4.setColorTint(c)
   obj4.setScale({x=size.x, y=size.y, z=1})
   obj4.setPosition({x= -(size.z/2) + 0.5, y=3, z=0})
+ --
 
-  --Hand Divider
+ --Hand Divider
   obj5 = spawnObject(spawnParams)
   obj5.setLock(true)
   obj5.setColorTint(c)
   obj5.setScale({x=0.25, y=size.y, z=size.z - 20.25})
   obj5.setPosition({x= 0, y=3, z=(size.x/2) + 0.5 - 7.5})
 
-  --Left Divider
+ --Left Divider
   obj6 = spawnObject(spawnParams)
   obj6.setLock(true)
   obj6.setColorTint(c)
   obj6.setScale({x=6, y=size.y, z=0.25})
   obj6.setPosition({x= (size.z/2) - 10.25, y=3, z=10})
 
-  --Right Divider
+ --Right Divider
   obj7 = spawnObject(spawnParams)
   obj7.setLock(true)
   obj7.setColorTint(c)
   obj7.setScale({x=6, y=size.y, z=0.25})
   obj7.setPosition({x= -(size.z/2) + 10.25, y=3, z=10})
---[[
-  --Divider
+ --Divider
+  --[[
   obj8 = spawnObject(spawnParams)
   obj8.setLock(true)
   obj8.setColorTint(c)
   obj8.setScale({x=0.25, y=size.y, z=size.z})
   obj8.setPosition({x= 0, y=3, z=(size.x/2) + 0.5 - 14})
-]]
+  ]]
+ --
 
-  --Library
+ --Library
+ 
   obj9 = spawnObject(spawnParams)
   obj9.setLock(true)
   obj9.setColorTint(c)
   obj9.setScale({x=3.25, y=size.y, z=2.5})
   obj9.setPosition({x= (size.z/2) - 2.5, y=3, z=(size.x/2) + 0.5 - 6})
-  pos9 = obj.positionToLocal(obj9.getPosition())
+ 
 
-  --Graveyard
+ --Graveyard
   obj10 = spawnObject(spawnParams)
   obj10.setLock(true)
   obj10.setColorTint(c)
   obj10.setScale({x=3.25, y=size.y, z=2.5})
   obj10.setPosition({x= (size.z/2) - 5.5, y=3, z=(size.x/2) + 0.5 - 6})
-  pos10 = obj.positionToLocal(obj10.getPosition())
 
-  --Exile
+ --Exile
   obj11 = spawnObject(spawnParams)
   obj11.setLock(true)
   obj11.setColorTint(c)
   obj11.setScale({x=3.25, y=size.y, z=2.5})
   obj11.setPosition({x= (size.z/2) - 8.5, y=3, z=(size.x/2) + 0.5 - 6})
-  pos11 = obj.positionToLocal(obj11.getPosition())
-
--- X = left, Y = Height, Z = Up
-
-  --Hand
+ -- X = left, Y = Height, Z = Up
+ 
+ --Hand
   lua = "p = Player." .. p.color ..
   [=[
-    off = vector(0, 3, -11 )
+    off = vector( 0, 3, -11 )
+    sca = vector(16, 6, 4)
     up = false
-    fixed = false
     function onLoad(save_state)
-          pos = self.getPosition()
-          rot = self.getRotation()
-          sca = vector(16, 6, 4)
-
-          if checkHand() then
-            t = p.getHandTransform()
-            t["position"] = PointOnSphere(pos, rot, off.z)
-            t["rotation"] = vector(rot.x, rot.y + 90, rot.z)
-            t["scale"] = sca
-            p.setHandTransform(t, 1)
-          else
-            print("There is no handzones for ".. p.color)
-          end
+        self.addContextMenuItem("Reposition Hand", fixPosition)
     end
     function checkHand()
         return p.getHandCount() > 0
     end
-    function fixedUpdate(player_color)
+    function fixPosition()
         up = self.getVelocity() ~= vector(0, 0, 0)
         pos = self.getPosition()
         rot = self.getRotation()
-        pitch = rot.x
-        yaw = rot.y
         if rot.x ~= 0 or rot.z ~= 0 then
-          rot.x = 0;
-          rot.z = 0;
-          --self.setLock(true)
-          self.setRotation(rot)
-    end
-
-        if(checkHand()) then
-          if up and fixed then fixed = false end
-            if not fixed and not up then
-              t = p.getHandTransform()
-              point = PointOnSphere(pos, rot, off.z)
-              point.x = pos.x + off.x
-              point.y = pos.y + off.y
-
-              t["position"] = point
-              t["rotation"] = vector(rot.x, rot.y + 90, rot.z)
-              p.setHandTransform(t, 1)
-              fixed = true
-            end
-          end
+            rot.x = 0;
+            rot.z = 0;
+            self.setRotation(rot)
+        end
+        if checkHand() and not up then
+            t = p.getHandTransform()
+            t["scale"] = sca
+            t["position"] = PointOnSphere(pos, rot, off.z)
+            t["rotation"] = vector(rot.x, rot.y + 90, rot.z)
+            p.setHandTransform(t, 1)
+        else
+            print("There is no handzones for ".. p.color)
+        end
     end
     function PointOnSphere(origin, rotation, radius)
-          return {
-              x = origin.x + radius * math.cos(math.rad(-rotation.y)) * math.cos(math.rad(rotation.x)),
-              y = origin.y + radius * math.sin(math.rad(rotation.x)),
-              z = origin.z + radius * math.sin(math.rad(-rotation.y)) * math.cos(math.rad(rotation.x))
-          }
+        return {
+            x = origin.x + radius * math.cos(math.rad(-rotation.y)) * math.cos(math.rad(rotation.x)),
+            y = origin.y + radius * math.sin(math.rad(rotation.x)),
+            z = origin.z + radius * math.sin(math.rad(-rotation.y)) * math.cos(math.rad(rotation.x))
+        }
     end
   ]=]
   obj.setLuaScript(lua)
+  --obj.call('fixPosition')
+ --
 
   obj.addAttachment(obj1)
   obj.addAttachment(obj2)
@@ -278,17 +278,17 @@ function spawnZone(p)
 
   obj.setSnapPoints({
     {
-      position = pos9,
+      position = obj.positionToLocal(obj9.getPosition()),
       rotation = {0,270,0},
       rotation_snap = true
     },
     {
-      position = pos10,
+      position = obj.positionToLocal(obj10.getPosition()),
       rotation = {0,270,0},
       rotation_snap = true
     },
     {
-      position = pos11,
+      position = obj.positionToLocal(obj11.getPosition()),
       rotation = {0,270,0},
       rotation_snap = true
     }
@@ -297,10 +297,25 @@ function spawnZone(p)
   obj.addAttachment(obj9)
   obj.addAttachment(obj10)
   obj.addAttachment(obj11)
-  --obj.setLock(false)
+  obj.setLock(false)
   
   return obj
 end
+
+function cardZone(color)
+  obj = spawnObject({
+    type = "BlockSquare",
+    rotation          = {x=0, y=90, z=0},
+    scale             = {x=3.25, y=0.25, z=2.35},
+    sound             = false,
+    snap_to_grid      = true,
+    ignore_fog_of_war	= true
+  })
+  obj.setColorTint(color)
+  obj.setLock(true)
+  return obj
+end
+
 function spawnExtras(obj, spawnParams)
   --Hand Counter
   obj12 = spawnObject({
