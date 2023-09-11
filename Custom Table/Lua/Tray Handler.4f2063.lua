@@ -1,4 +1,5 @@
 
+ply = {}
 function onload()
   s = 35
   --[[
@@ -18,29 +19,78 @@ function onload()
   --spawnHandTray(Player.Black).setPosition({x=0,y=5,z=0})
   self.addContextMenuItem("Setup", setup)
   self.addContextMenuItem("Circle", circleColor)
+  self.setPosition({0, 5, 0})
+  self.setRotation({0, 0, 0})
+  self.setScale({5,5,5})
+  self.setLock(true)
+  --spawnCircles()
+end
+
+function spawnCircles()
+  if ply ~= nil then
+    removeCircles()
+  end
+  for i,v in pairs(Player.getColors()) do
+    if i==11 then return end
+    --reversi_chip
+    obj = spawnObject({
+      type = "reversi_chip",
+      rotation          = circlePoint(i).rotation,
+      scale             = {x=3, y=3, z=3},
+      sound             = false,
+      snap_to_grid      = true,
+      ignore_fog_of_war	= true
+    })
+    pos = circlePoint(i).position
+    pos.y = pos.y + 5
+    obj.setPosition(pos)
+    obj.setColorTint(v)
+    --obj.setLock(true)
+    table.insert(ply, obj)
+  end
+end
+
+function onPickUp(player_color)
+  if self.getRotation().z <= 0 and self.getRotation().z >= -120 then
+    self.setRotationSmooth({0,0,180}, false, false)
+    spawnCircles()
+  else
+    self.setRotationSmooth({0,0,0}, false, false)
+    removeCircles()
+  end
+end
+
+function removeCircles()
+  for i,v in pairs(ply) do
+    v.destruct()
+  end
+  ply = {}
 end
 
 function setup()
+  removeCircles()
   --obj = spawnZone(Player["White"])
-
+ --Mat stuff
   mats = Player.getColors();
-  ammount = 10 -- How many mats Max:10
+  ammount = 2 -- How many mats Max:10
   
   table.remove(mats) -- Remove Black
   table.remove(mats) -- Remove Grey
   for i = 1,#mats - ammount, 1 do
     table.remove(mats) -- Remove
   end
-  --mats = getSeatedPlayers()
+  mats = getSeatedPlayers()
+  --print(findSeats(#mats, 1))
   
-  off = 0
+ --Spawns everything
   for i,v in pairs(mats) do 
-    print(i .. ", " .. (i % 4))
+    off = 0
+    --print(i .. ", " .. i%4 .. ", " .. i%2)
     x = ( ( 44 * math.ceil( (i-2) / 4 ) ) * ( - 1 + ( ( math.ceil( i / 2 ) % 2 ) * 2 ) ) )
     y = 14 - (28 * (i % 2))
     if i % 2 == 1 then
-      
     end
+
     --Rotate ends to face
     --TODO If over 8 or 10 have 2 facing ends
     if #mats > 2 and #mats % 2 ~= 0 then
@@ -55,8 +105,9 @@ function setup()
         y = 0
       end
     end
+
     --Center board cluster
-    if #mats ~= 1 and #mats ~= 10 then
+    if #mats >= 3 and #mats ~= 10 then
       if #mats % 2 == 0 then
         x = x + 22
       else
@@ -68,6 +119,7 @@ function setup()
       end
     end
 
+    --Spawns stuff
     if v ~= "Grey" and v ~= "Black" then
       obj = spawnZone(Player[v])
       obj.setLock(true)
@@ -78,8 +130,82 @@ function setup()
 
 end
 
+--seatsPositions = {}
+function findSeats(a, i) -- Amount of players, Player number
+  tr = {}
+  print("Searching")
+  if i ~= nil and a ~= nil then
+    print("Valid")
+    off = 0
+    x = ( ( 44 * math.ceil( (i-2) / 4 ) ) * ( - 1 + ( ( math.ceil( i / 2 ) % 2 ) * 2 ) ) )
+    y = 14 - (28 * (i % 2))
+    if i % 2 == 1 then 
+      --Rotate ends to face
+      --TODO If over 8 or 10 have 2 facing ends
+      if a > 2 and a % 2 ~= 0 then
+        if a == i then
+          if i % 4 == 3 then
+            off = 90
+            x = x + 8
+          elseif i % 4 == 1 then
+            off = -90
+            x = x - 8
+          end
+          y = 0
+        end
+      end
+      --Center board cluster
+      if a > 2 and a ~= 10 then
+        if a % 2 == 0 then
+          x = x + 22
+        else
+          if a % 4 == 3 then
+            x = x - 14
+          else
+            x = x + 14
+          end
+        end
+      end
+
+      if v ~= "Grey" and v ~= "Black" then
+      end
+      
+    end
+    
+    tr = 
+    {
+      position          = { x, 0.5, y },
+      rotation          = {0, (off + 90) + (180 * (i % 2)), 0}
+    }
+    --print("Transform set: " .. tr.position)
+  else
+    print("Seat values nil")
+  end
+  return transform
+end
+
+function circlePoint(i)
+  local x, y, r = 0, 0, 30 -- offset x, offset y, radious
+  local c = 10 -- Amount of points
+  local angle = (i - 3.5) * math.pi / (c / 2)
+  local ptx, pty = x + r * math.cos(angle), y + r * math.sin(angle)
+
+  return { 
+    position = vector(ptx, 0.5, pty), 
+    rotation = vector(0, 234 + (i-2) * -360 / c, 0)
+  }
+end
+
+function roundNumberToFactor(number, factor)
+  if(number % factor > factor/2) then
+      return number + (factor - (number % factor))
+  else
+      return number - (number % factor)
+  end
+end
 
 function circleColor()
+  
   sx,sy = 10,15 -- size of tray
   local x, y, r = 0, 0, 30 -- offset x, offset y, radious
   local c = 10 -- Amount of points
@@ -90,7 +216,6 @@ function circleColor()
       --obj = spawnZone(Player[v])
       obj.setLock(true)
       local angle = (i - 3.5) * math.pi / (c / 2)
-      print()
       local ptx, pty = x + r * math.cos(angle), y + r * math.sin(angle)
       obj.setPosition(vector(ptx, 0.5, pty))
       obj.setRotation(vector(0, 234 + ((i-2) * -360 / c), 0))
@@ -109,7 +234,7 @@ function spawnZone(p)
   obj.addAttachment(obj1)
   obj.setLock(false)
   ]]
- --
+ --|
 
   --print("" .. xSize .. " " .. ySize .. " " .. zSize)
   size = vector(28, 0.25, 44)
@@ -137,6 +262,8 @@ function spawnZone(p)
     snap_to_grid      = true,
     ignore_fog_of_war	= true
   }
+  --|
+ --<Base Peices>
  --Base
   obj = spawnObject(spawnParams)
   obj.setLock(true)
@@ -169,6 +296,7 @@ function spawnZone(p)
   obj4.setPosition({x= -(size.z/2) + 0.5, y=3, z=0})
  --
 
+ --<Dividers>
  --Hand Divider
   obj5 = spawnObject(spawnParams)
   obj5.setLock(true)
@@ -199,6 +327,7 @@ function spawnZone(p)
   ]]
  --
 
+ --<Card Zones>
  --Library
  
   obj9 = spawnObject(spawnParams)
@@ -221,16 +350,19 @@ function spawnZone(p)
   obj11.setColorTint(c)
   obj11.setScale({x=3.25, y=size.y, z=2.5})
   obj11.setPosition({x= (size.z/2) - 8.5, y=3, z=(size.x/2) + 0.5 - 6})
- -- X = left, Y = Height, Z = Up
- 
+
+  -- X = left, Y = Height, Z = Up
+
  --Hand
   lua = "p = Player." .. p.color ..
   [=[
+
     off = vector( 0, 3, -11 )
     sca = vector(16, 6, 4)
     up = false
     function onLoad(save_state)
         self.addContextMenuItem("Reposition Hand", fixPosition)
+        Wait.frames(fixPosition, 1)
     end
     function checkHand()
         return p.getHandCount() > 0
@@ -242,11 +374,15 @@ function spawnZone(p)
         if rot.x ~= 0 or rot.z ~= 0 then
             rot.x = 0;
             rot.z = 0;
-            self.setRotation(rot)
+            self.setRotation({rot.x,roundNumberToFactor(rot.y,15),rot.z})
         end
         if checkHand() and not up then
             t = p.getHandTransform()
             t["scale"] = sca
+
+            pos.x = pos.x + off.x
+            pos.y = pos.y + off.y
+
             t["position"] = PointOnSphere(pos, rot, off.z)
             t["rotation"] = vector(rot.x, rot.y + 90, rot.z)
             p.setHandTransform(t, 1)
@@ -261,11 +397,18 @@ function spawnZone(p)
             z = origin.z + radius * math.sin(math.rad(-rotation.y)) * math.cos(math.rad(rotation.x))
         }
     end
+    function roundNumberToFactor(number, factor)
+      if(number % factor > factor/2) then
+          return number + (factor - (number % factor))
+      else
+          return number - (number % factor)
+      end
+    end
   ]=]
   obj.setLuaScript(lua)
   --obj.call('fixPosition')
  --
-
+ --<Attach everything>
   obj.addAttachment(obj1)
   obj.addAttachment(obj2)
   obj.addAttachment(obj3)
@@ -298,8 +441,10 @@ function spawnZone(p)
   obj.addAttachment(obj10)
   obj.addAttachment(obj11)
   obj.setLock(false)
-  
+  --
+
   return obj
+
 end
 
 function cardZone(color)
@@ -667,60 +812,53 @@ function spawnHandTray(p)
   obj = spawnTray(p,8,0.25,16)
   lua = "p = Player." .. p.color ..
   [=[
-    off = vector(10, 3, 0)
-    up = false
-    fixed = false
-    function onLoad(save_state)
-          pos = self.getPosition()
-          rot = self.getRotation()
-          sca = vector(10, 6, 4)
 
-          if checkHand() then
-            t = p.getHandTransform()
-            t["position"] = PointOnSphere(pos, rot, off.z)
-            t["rotation"] = vector(rot.x, rot.y + 90, rot.z)
-            t["scale"] = sca
-            p.setHandTransform(t, 1)
-          else
-            print("There is no handzones for ".. p.color)
-          end
+    off = vector( 0, 3, 0 )
+    sca = vector(16, 6, 4)
+    up = false
+    function onLoad(save_state)
+        self.addContextMenuItem("Reposition Hand", fixPosition)
+        Wait.frames(fixPosition, 1)
     end
     function checkHand()
         return p.getHandCount() > 0
     end
-    function fixedUpdate(player_color)
+    function fixPosition()
         up = self.getVelocity() ~= vector(0, 0, 0)
         pos = self.getPosition()
         rot = self.getRotation()
-        pitch = rot.x
-        yaw = rot.y
         if rot.x ~= 0 or rot.z ~= 0 then
-          rot.x = 0;
-          rot.z = 0;
-          --self.setLock(true)
-          self.setRotation(rot)
-    end
+            rot.x = 0;
+            rot.z = 0;
+            self.setRotation({rot.x,roundNumberToFactor(rot.y,15),rot.z})
+        end
+        if checkHand() and not up then
+            t = p.getHandTransform()
+            t["scale"] = sca
 
-        if(checkHand()) then
-          if up and fixed then fixed = false end
-            if not fixed and not up then
-              t = p.getHandTransform()
-              point = PointOnSphere(pos, rot, off.z)
-              point.y = pos.y + off.y
+            pos.x = pos.x + off.x
+            pos.y = pos.y + off.y
 
-              t["position"] = point
-              t["rotation"] = vector(rot.x, rot.y + 90, rot.z)
-              p.setHandTransform(t, 1)
-              fixed = true
-            end
-          end
+            t["position"] = PointOnSphere(pos, rot, off.z)
+            t["rotation"] = vector(rot.x, rot.y + 90, rot.z)
+            p.setHandTransform(t, 1)
+        else
+            print("There is no handzones for ".. p.color)
+        end
     end
     function PointOnSphere(origin, rotation, radius)
-          return {
-              x = origin.x + radius * math.cos(math.rad(-rotation.y)) * math.cos(math.rad(rotation.x)),
-              y = origin.y + radius * math.sin(math.rad(rotation.x)),
-              z = origin.z + radius * math.sin(math.rad(-rotation.y)) * math.cos(math.rad(rotation.x))
-          }
+        return {
+            x = origin.x + radius * math.cos(math.rad(-rotation.y)) * math.cos(math.rad(rotation.x)),
+            y = origin.y + radius * math.sin(math.rad(rotation.x)),
+            z = origin.z + radius * math.sin(math.rad(-rotation.y)) * math.cos(math.rad(rotation.x))
+        }
+    end
+    function roundNumberToFactor(number, factor)
+      if(number % factor > factor/2) then
+          return number + (factor - (number % factor))
+      else
+          return number - (number % factor)
+      end
     end
   ]=]
   obj.setLuaScript(lua)
