@@ -1,22 +1,5 @@
-
 ply = {}
 function onload()
-  s = 35
-  --[[
-  spawnTray(Player.Red,s,1,s).setPosition({x=-72,y=1,z=18})
-  spawnTray(Player.Yellow,s,1,s).setPosition({x=-72,y=1,z=-18})
-  spawnTray(Player.Orange,s,1,s).setPosition({x=-35,y=1,z=-57})
-  spawnTray(Player.Green,s,1,s).setPosition({x=35,y=1,z=-57})
-  spawnTray(Player.Teal,s,1,s).setPosition({x=72,y=1,z=-18})
-  spawnTray(Player.Blue,s,1,s).setPosition({x=72,y=1,z=18})
-  spawnTray(Player.Purple,s,1,s).setPosition({x=35,y=1,z=57})
-  spawnTray(Player.Pink,s,1,s).setPosition({x=-35,y=1,z=57})
-  spawnTray(Player.White,s,1,s).setPosition({x=0,y=1,z=57})
-  spawnTray(Player.Brown,s,1,s).setPosition({x=0,y=1,z=-57})
-  spawnTray(Player.Black,s,1,s).setPosition({x=0,y=1,z=0})
-  --]]
-  --spawnFogTray(Player.Black).setPosition({x=0,y=1,z=0})
-  --spawnHandTray(Player.Black).setPosition({x=0,y=5,z=0})
   self.addContextMenuItem("Setup", setup)
   self.addContextMenuItem("Circle", circleColor)
   self.setPosition({0, 5, 0})
@@ -24,6 +7,16 @@ function onload()
   self.setScale({5,5,5})
   self.setLock(true)
   --spawnCircles()
+end
+
+function onPickUp(player_color)
+  if self.getRotation().z <= 0 and self.getRotation().z >= -120 then
+    self.setRotationSmooth({0,0,180}, false, false)
+    spawnCircles()
+  else
+    self.setRotationSmooth({0,0,0}, false, false)
+    removeCircles()
+  end
 end
 
 function spawnCircles()
@@ -50,140 +43,13 @@ function spawnCircles()
   end
 end
 
-function onPickUp(player_color)
-  if self.getRotation().z <= 0 and self.getRotation().z >= -120 then
-    self.setRotationSmooth({0,0,180}, false, false)
-    spawnCircles()
-  else
-    self.setRotationSmooth({0,0,0}, false, false)
-    removeCircles()
-  end
-end
-
 function removeCircles()
   for i,v in pairs(ply) do
     v.destruct()
   end
   ply = {}
 end
-
-function setup()
-  removeCircles()
-  --obj = spawnZone(Player["White"])
- --Mat stuff
-  mats = Player.getColors();
-  ammount = 2 -- How many mats Max:10
-  
-  table.remove(mats) -- Remove Black
-  table.remove(mats) -- Remove Grey
-  for i = 1,#mats - ammount, 1 do
-    table.remove(mats) -- Remove
-  end
-  mats = getSeatedPlayers()
-  --print(findSeats(#mats, 1))
-  
- --Spawns everything
-  for i,v in pairs(mats) do 
-    off = 0
-    --print(i .. ", " .. i%4 .. ", " .. i%2)
-    x = ( ( 44 * math.ceil( (i-2) / 4 ) ) * ( - 1 + ( ( math.ceil( i / 2 ) % 2 ) * 2 ) ) )
-    y = 14 - (28 * (i % 2))
-    if i % 2 == 1 then
-    end
-
-    --Rotate ends to face
-    --TODO If over 8 or 10 have 2 facing ends
-    if #mats > 2 and #mats % 2 ~= 0 then
-      if #mats == i then
-        if i % 4 == 3 then
-          off = 90
-          x = x + 8
-        elseif i % 4 == 1 then
-          off = -90
-          x = x - 8
-        end
-        y = 0
-      end
-    end
-
-    --Center board cluster
-    if #mats >= 3 and #mats ~= 10 then
-      if #mats % 2 == 0 then
-        x = x + 22
-      else
-        if #mats % 4 == 3 then
-          x = x - 14
-        else
-          x = x + 14
-        end
-      end
-    end
-
-    --Spawns stuff
-    if v ~= "Grey" and v ~= "Black" then
-      obj = spawnZone(Player[v])
-      obj.setLock(true)
-      obj.setPosition(vector(x, 0.5, y))
-      obj.setRotation(vector(0, (off + 90) + (180 * (i % 2)), 0))
-    end
-  end
-
-end
-
---seatsPositions = {}
-function findSeats(a, i) -- Amount of players, Player number
-  tr = {}
-  print("Searching")
-  if i ~= nil and a ~= nil then
-    print("Valid")
-    off = 0
-    x = ( ( 44 * math.ceil( (i-2) / 4 ) ) * ( - 1 + ( ( math.ceil( i / 2 ) % 2 ) * 2 ) ) )
-    y = 14 - (28 * (i % 2))
-    if i % 2 == 1 then 
-      --Rotate ends to face
-      --TODO If over 8 or 10 have 2 facing ends
-      if a > 2 and a % 2 ~= 0 then
-        if a == i then
-          if i % 4 == 3 then
-            off = 90
-            x = x + 8
-          elseif i % 4 == 1 then
-            off = -90
-            x = x - 8
-          end
-          y = 0
-        end
-      end
-      --Center board cluster
-      if a > 2 and a ~= 10 then
-        if a % 2 == 0 then
-          x = x + 22
-        else
-          if a % 4 == 3 then
-            x = x - 14
-          else
-            x = x + 14
-          end
-        end
-      end
-
-      if v ~= "Grey" and v ~= "Black" then
-      end
-      
-    end
-    
-    tr = 
-    {
-      position          = { x, 0.5, y },
-      rotation          = {0, (off + 90) + (180 * (i % 2)), 0}
-    }
-    --print("Transform set: " .. tr.position)
-  else
-    print("Seat values nil")
-  end
-  return transform
-end
-
+--Returns the point in a circle
 function circlePoint(i)
   local x, y, r = 0, 0, 30 -- offset x, offset y, radious
   local c = 10 -- Amount of points
@@ -191,37 +57,67 @@ function circlePoint(i)
   local ptx, pty = x + r * math.cos(angle), y + r * math.sin(angle)
 
   return { 
-    position = vector(ptx, 0.5, pty), 
+    position = vector(roundNumberToFactor(ptx, 15), 0.5, roundNumberToFactor(pty, 15)), 
     rotation = vector(0, 234 + (i-2) * -360 / c, 0)
   }
 end
 
-function roundNumberToFactor(number, factor)
-  if(number % factor > factor/2) then
-      return number + (factor - (number % factor))
-  else
-      return number - (number % factor)
-  end
-end
 
-function circleColor()
+function setup()
+  removeCircles()
+  --obj = spawnZone(Player["White"])
+  ammount = 10 -- How many mats Max:10
+ --Mat stuff
+  mats = Player.getColors();
   
-  sx,sy = 10,15 -- size of tray
-  local x, y, r = 0, 0, 30 -- offset x, offset y, radious
-  local c = 10 -- Amount of points
-  for i,v in pairs(Player.getColors()) do
+  table.remove(mats) -- Remove Black
+  table.remove(mats) -- Remove Grey
+  for i = 1,#mats - ammount, 1 do
+    table.remove(mats) -- Remove
+  end
+
+ --
+  mats = getSeatedPlayers() --Comment this out for custom number of players.
+  
+ --Spawns everything
+  for i,v in pairs(mats) do 
+    --Spawns stuff
     if v ~= "Grey" and v ~= "Black" then
-      --obj = spawnTray(Player[v],sx,0.25,sy)
-      obj = spawnHandTray(Player[v],sx,0.25,sy)
-      --obj = spawnZone(Player[v])
-      obj.setLock(true)
-      local angle = (i - 3.5) * math.pi / (c / 2)
-      local ptx, pty = x + r * math.cos(angle), y + r * math.sin(angle)
-      obj.setPosition(vector(ptx, 0.5, pty))
-      obj.setRotation(vector(0, 234 + ((i-2) * -360 / c), 0))
+      tr = findSeats(#mats,i)
+      obj = spawnZone(Player[v])
+      obj.setPosition(tr.position)
+      obj.setRotation(tr.rotation)
+      stuff = spawnExtras(Player[v])
+      
+      for a,b in pairs(stuff) do
+        local pos = b.getPosition()
+        local rot = b.getRotation()
+        
+        local rotation_radians = math.rad(tr.rotation[2])
+    
+        -- Calculate the new position
+        local fixpos = {
+            tr.position[1] + math.cos(rotation_radians) * pos.x + math.sin(rotation_radians) * pos.z,
+            pos.y,
+            tr.position[3] - math.sin(rotation_radians) * pos.x + math.cos(rotation_radians) * pos.z
+        }
+    
+        -- Calculate the new rotation
+        local fixrot = {
+            tr.rotation[1] + rot.x,
+            tr.rotation[2] + rot.y,
+            tr.rotation[3] + rot.z
+        }
+    
+        -- Set the new position and rotation
+        b.setPosition(fixpos)
+        b.setRotation(fixrot)
+      end
     end
   end
+  self.destruct()
 end
+
 
 function spawnZone(p)
  --[[
@@ -318,40 +214,17 @@ function spawnZone(p)
   obj7.setScale({x=6, y=size.y, z=0.25})
   obj7.setPosition({x= -(size.z/2) + 10.25, y=3, z=10})
  --Divider
-  --[[
+  
   obj8 = spawnObject(spawnParams)
   obj8.setLock(true)
   obj8.setColorTint(c)
   obj8.setScale({x=0.25, y=size.y, z=size.z})
-  obj8.setPosition({x= 0, y=3, z=(size.x/2) + 0.5 - 14})
-  ]]
+  obj8.setPosition({x= 0, y=3, z=(size.x/2) + 0.5 - 10})
+  
  --
 
- --<Card Zones>
- --Library
- 
-  obj9 = spawnObject(spawnParams)
-  obj9.setLock(true)
-  obj9.setColorTint(c)
-  obj9.setScale({x=3.25, y=size.y, z=2.5})
-  obj9.setPosition({x= (size.z/2) - 2.5, y=3, z=(size.x/2) + 0.5 - 6})
- 
-
- --Graveyard
-  obj10 = spawnObject(spawnParams)
-  obj10.setLock(true)
-  obj10.setColorTint(c)
-  obj10.setScale({x=3.25, y=size.y, z=2.5})
-  obj10.setPosition({x= (size.z/2) - 5.5, y=3, z=(size.x/2) + 0.5 - 6})
-
- --Exile
-  obj11 = spawnObject(spawnParams)
-  obj11.setLock(true)
-  obj11.setColorTint(c)
-  obj11.setScale({x=3.25, y=size.y, z=2.5})
-  obj11.setPosition({x= (size.z/2) - 8.5, y=3, z=(size.x/2) + 0.5 - 6})
-
   -- X = left, Y = Height, Z = Up
+
 
  --Hand
   lua = "p = Player." .. p.color ..
@@ -417,64 +290,103 @@ function spawnZone(p)
   obj.addAttachment(obj5)
   obj.addAttachment(obj6)
   obj.addAttachment(obj7)
-  --obj.addAttachment(obj8)
+  obj.addAttachment(obj8)
 
-  obj.setSnapPoints({
-    {
-      position = obj.positionToLocal(obj9.getPosition()),
-      rotation = {0,270,0},
-      rotation_snap = true
-    },
-    {
-      position = obj.positionToLocal(obj10.getPosition()),
-      rotation = {0,270,0},
-      rotation_snap = true
-    },
-    {
-      position = obj.positionToLocal(obj11.getPosition()),
-      rotation = {0,270,0},
-      rotation_snap = true
-    }
-  })
-
-  obj.addAttachment(obj9)
-  obj.addAttachment(obj10)
-  obj.addAttachment(obj11)
-  obj.setLock(false)
   --
-
+  obj.interactable = false
   return obj
 
 end
 
-function cardZone(color)
-  obj = spawnObject({
+function spawnExtras(p)
+  extras = {}
+  obj = spawnHandCounter(p)
+  obj.setPosition({x=-5.8, y=0.6, z=-3})
+  obj.setRotation({x=0, y=-90, z=0})
+  obj.setLock(true)
+  obj.interactable = false
+  table.insert(extras, obj)
+
+  obj2 = spawnLifeCounter(p)
+  obj2.setPosition({x= -7, y=0.56, z=0})
+  obj2.setRotation({x=0, y=-90, z=0})
+  obj2.setLock(true)
+  obj2.setLock(true)
+  obj2.interactable = false
+  table.insert(extras, obj2)
+  
+  --<Card Zones>
+  --Library
+  obj9 = spawnCardZone(p.color)
+  obj9.setPosition({x= 8.5 -16, y=0.5, z= 22 - 2.5})
+  table.insert(extras, obj9)
+  
+ --Graveyard
+  obj10 = spawnCardZone(p.color)
+  obj10.setPosition({x= 8.5 -16, y=0.5, z= 22 - 5.5})
+  table.insert(extras, obj10)
+
+ --Exile
+  obj11 = spawnCardZone(p.color)
+  obj11.setPosition({x= 8.5 -16, y=0.5, z= 22 - 8.5})
+  table.insert(extras, obj11)
+  
+  --Commander 1
+  obj5 = spawnCardZone(p.color)
+  obj5.setPosition({x= 8.5 -16, y=0.5, z= -(22 - 8.5)})
+  table.insert(extras, obj5)
+
+  --Commander 2
+  obj4 = spawnCardZone(p.color)
+  obj4.setPosition({x= 8.5 -16, y=0.5, z= -(22 - 5.5)})
+  table.insert(extras, obj4)
+
+  --Extra
+  obj3 = spawnCardZone(p.color)
+  obj3.setPosition({x= 8.5 -16, y=0.5, z= -(22 - 2.5)})
+  table.insert(extras, obj3)
+  
+
+  return extras
+end
+
+function spawnCardZone(color)
+  cardz = spawnObject({
     type = "BlockSquare",
-    rotation          = {x=0, y=90, z=0},
+    rotation          = {x=0, y=0, z=0},
     scale             = {x=3.25, y=0.25, z=2.35},
     sound             = false,
     snap_to_grid      = true,
     ignore_fog_of_war	= true
   })
-  obj.setColorTint(color)
-  obj.setLock(true)
-  return obj
+  cardz.setColorTint(color)
+  cardz.setLock(true)
+  cardz.setSnapPoints({
+    {
+      position = cardz.getPosition(),
+      rotation = {0,270,0},
+      rotation_snap = true
+    }
+  })
+  return cardz
 end
 
-function spawnExtras(obj, spawnParams)
+function spawnHandCounter(p)
   --Hand Counter
-  obj12 = spawnObject({
-    type = "Custom_Token"
+  local obj = spawnObject({
+    type              = "Custom_Token",
+    scale             = {x=0.5, y=0.5 , z=0.5},
   })
-  obj12.setCustomObject({
+  obj.setCustomObject({
     image             = "http://cloud-3.steamusercontent.com/ugc/1646593716898448966/68DC98F323399C7CADF7E53933EAC99FBB94167E/",
     thickness         = 0.15,
-    rotation          = {x=0, y=90, z=0},
     sound             = false,
     snap_to_grid      = true,
     ignore_fog_of_war	= true
   })
-  obj12.setLuaScript([[
+
+  obj.setLuaScript(
+    [[
       --- Hand counter by Schokolabbi
 
       --- Click delay time in seconds
@@ -566,246 +478,317 @@ function spawnExtras(obj, spawnParams)
           player = Player[color]
           return player == owner or player.admin
       end
-    ]])
-  obj12.setLock(true)
-  obj12.setScale({x=0.5, y=0.5 , z=0.5})
-  obj12.setPosition({x= -12, y=3.15, z=11.9})
-  obj.jointTo(obj12,{type = "Fixed", collision = false})
-  obj12.setLock(false)
-  obj12.interactable = false
+    ]]
+  )
+  return obj
+end
 
+function spawnLifeCounter(p)
   --Life Counter
-  obj13 = spawnObject({
-    type = "Custom_Token"
+  local obj = spawnObject({
+    type = "Custom_Token",
+    scale             = {x=1, y=1 , z=1},
   })
-  obj13.setCustomObject({
+  obj.setCustomObject({
     image             = "http://cloud-3.steamusercontent.com/ugc/1836915738113613310/922E11FF5CBC801148AA87DE60ED64472A618F3D/",
     collision         = false,
     thickness         = 0.15,
-    rotation          = {x=0, y=90, z=0},
     sound             = false,
     snap_to_grid      = true,
     ignore_fog_of_war	= true
   })
-  obj13.setLuaScript([[
-    --By Amuzet
-    mod_name,version='LifeTracker',1
-    author='76561198045776458'
 
-    function updateSave()
-      self.script_state=JSON.encode({['c']=count})
-    end
+  obj.setLuaScript(
+    [[
+      --By Amuzet
+      mod_name,version='LifeTracker',1
+      author='76561198045776458'
 
-    function wait(t)
-      local s=os.time()
-      repeat coroutine.yield(0) until os.time()>s+t
-    end
-
-    function sL(l,n)
-      plus=''
-      if n~=nil then
-        if n>0 then plus='+' end
-        if n==0 then
-          n=nil
-        end
+      function updateSave()
+        self.script_state=JSON.encode({['c']=count})
       end
-      self.editButton({index=0,label=l})
-      self.editButton({index=1,label=plus..(n or'')})
 
-    end
-
-    function option(o,c,a)
-      local n=1
-      if a then
-        n=-n
+      function wait(t)
+        local s=os.time()
+        repeat coroutine.yield(0) until os.time()>s+t
       end
-      click_changeValue(o,c,n)
-    end
 
-    function click_changeValue(obj, color, val)
-      if color==owner or Player[color].admin then
-        local C3=count
-        count=count+val
-        local C1=count
-        function clickCoroutine()
-          if not C2 then
-            C2=C3
+      function sL(l,n)
+        plus=''
+        if n~=nil then
+          if n>0 then plus='+' end
+          if n==0 then
+            n=nil
           end
-          sL(count,(count-C2))
-          wait(3)
-          if C2 and C1==count then
-            local gl='lost'
-            if C1>C2 then
-              gl='gained'
-            end
-            if C1~=C2 then
-              sL(count)
-              local t=txt:format(gl,math.abs(count-C2),count)
-              printToAll(t,ownerRGB)
-              log(t)
-            end
-            C2=nil
-          end
-        return 1
         end
-        startLuaCoroutine(self,'clickCoroutine')
-        updateSave()
+        self.editButton({index=0,label=l})
+        self.editButton({index=1,label=plus..(n or'')})
+
       end
-    end
 
-    local lCheck={
-      ['extort_']=function(n,c)if c==owner then for _,p in pairs(Player.getPlayers())do if p.seated and p.color~=owner then count=count+n end end return count,'extorted everyone for'else return count-n,false,true end end,
-      ['drain_']=function(n,c)if c==owner then return count+n,'drained everyone for'else return count-n,false,true end end,
-      ['opponents_lose_']=function(n,c)if c~=owner then return count-n else return count,'opponents lost'end end,
-      ['everyone_loses_']=function(n,c)return count-n,'made everyone lose'end,
-      ['double_my_life_']=function(n,c)if c==owner then return count*2^n,'doubled their life this many times'end end,
-      ['set_life_']=function(n,c)if c==owner then return n,'life total changed by '..math.abs(n-count)..'. Setting it to'end end,
-      ['RESET_Life_']=function(n,c)return n,'reset life totals to'end,
-      -- ['test_']=function(n,c)return count end,
-    }
+      function option(o,c,a)
+        local n=1
+        if a then
+          n=-n
+        end
+        click_changeValue(o,c,n)
+      end
 
-    function onChat(msg,player)
-      if msg:find('[ _]%d+') then
-        local m=msg:lower():gsub(' ','_')
-        local a,sl,t,n=false,false,'',tonumber(m:match('%d+'))
-        for k,f in pairs(lCheck) do
-          if m:find(k..'%d+') then
-            a,t,sl=f(n,player.color)
-            if a then
-              count=a
-              if sl then
-                sL(count,n)
+      function click_changeValue(obj, color, val)
+        if color==owner or Player[color].admin then
+          local C3=count
+          count=count+val
+          local C1=count
+          function clickCoroutine()
+            if not C2 then
+              C2=C3
+            end
+            sL(count,(count-C2))
+            wait(3)
+            if C2 and C1==count then
+              local gl='lost'
+              if C1>C2 then
+                gl='gained'
               end
-            break
-            else
-              return msg
+              if C1~=C2 then
+                sL(count)
+                local t=txt:format(gl,math.abs(count-C2),count)
+                printToAll(t,ownerRGB)
+                log(t)
+              end
+              C2=nil
+            end
+          return 1
+          end
+          startLuaCoroutine(self,'clickCoroutine')
+          updateSave()
+        end
+      end
+
+      local lCheck={
+        ['extort_']=function(n,c)if c==owner then for _,p in pairs(Player.getPlayers())do if p.seated and p.color~=owner then count=count+n end end return count,'extorted everyone for'else return count-n,false,true end end,
+        ['drain_']=function(n,c)if c==owner then return count+n,'drained everyone for'else return count-n,false,true end end,
+        ['opponents_lose_']=function(n,c)if c~=owner then return count-n else return count,'opponents lost'end end,
+        ['everyone_loses_']=function(n,c)return count-n,'made everyone lose'end,
+        ['double_my_life_']=function(n,c)if c==owner then return count*2^n,'doubled their life this many times'end end,
+        ['set_life_']=function(n,c)if c==owner then return n,'life total changed by '..math.abs(n-count)..'. Setting it to'end end,
+        ['RESET_Life_']=function(n,c)return n,'reset life totals to'end,
+        -- ['test_']=function(n,c)return count end,
+      }
+
+      function onChat(msg,player)
+        if msg:find('[ _]%d+') then
+          local m=msg:lower():gsub(' ','_')
+          local a,sl,t,n=false,false,'',tonumber(m:match('%d+'))
+          for k,f in pairs(lCheck) do
+            if m:find(k..'%d+') then
+              a,t,sl=f(n,player.color)
+              if a then
+                count=a
+                if sl then
+                  sL(count,n)
+                end
+              break
+              else
+                return msg
+              end
             end
           end
-        end
-        updateSave()
-        if t and t~='' then
-          broadcastToAll(player.color..'[999999] '..t..' [-]'..n,ownerRGB)
-          sL(count,count-JSON.decode(self.script_state).c)
-          return false
+          updateSave()
+          if t and t~='' then
+            broadcastToAll(player.color..'[999999] '..t..' [-]'..n,ownerRGB)
+            sL(count,count-JSON.decode(self.script_state).c)
+            return false
+          end
         end
       end
-    end
 
-    function onload(s)
-      owner = "]] .. p.color .. [["
-      ownerRGB = Color.fromString(owner)
-      ref_type = self.getName():gsub('%s.+','')
-      txt = owner..' [888888]%s %s '..ref_type..'.[-] |%s|'
-      self.setColorTint(ownerRGB)
-      if s~='' then
-        local ld=JSON.decode(s); count=ld.c
-      else
-        count=40
-      end
-      local rgb = stringColorToRGB(owner)
+      function onload(s)
+        owner = "]] .. p.color .. [["
+        ownerRGB = Color.fromString(owner)
+        ref_type = self.getName():gsub('%s.+','')
+        txt = owner..' [888888]%s %s '..ref_type..'.[-] |%s|'
+        self.setColorTint(ownerRGB)
+        if s~='' then
+          local ld=JSON.decode(s); count=ld.c
+        else
+          count=40
+        end
+        local rgb = stringColorToRGB(owner)
 
-      self.createButton({             -- the main button
-        tooltip='Click to increase\nRight click to decrease',
-        click_function='option',
-        function_owner=self,
-        height=750,
-        width=950,
-        font_size=1000,
-        label='\n'..count..'\n',
-        position={0,y,z},
-        hover_color={1,1,1,0.1},
-        scale=scale,
-        color=back,
-        font_color=font
-      })
-
-      self.createButton({             -- moved the change value to a separate button for more control
-        click_function='null',
-        function_owner=self,
-        height=0,
-        width=0,
-        font_size=400,
-        label='',
-        position={0-0.05,y,z+1},
-        hover_color={1,1,1,0.1},
-        scale=scale,
-        color=back,
-        font_color=font
-      })
-
-      for i,v in ipairs({             -- the side buttons
-          {n=1,l='▲',p={x*0.95,y,z+0.2}},
-          {n=-1,l='▼',p={-x,y,z+0.2}},
-          {n=20,l='+20',p={x*1.05,y,z-0.4}},
-          {n=-20,l='-20',p={-x*1.1,y,z-0.4}}}) do
-
-        local fn='valueChange'..i
-        self.setVar(fn, function(o,c,a) local b=1 if a then b=5 end click_changeValue(o,c,v.n*b) end)
-        self.createButton({
-          tooltip='Right-click for '..v.n*5,
-          label=v.l,
-          position=v.p,
-          click_function=fn,
+        self.createButton({             -- the main button
+          tooltip='Click to increase\nRight click to decrease',
+          click_function='option',
           function_owner=self,
+          height=750,
+          width=950,
+          font_size=1000,
+          label='\n'..count..'\n',
+          position={0,y,z},
+          hover_color={1,1,1,0.1},
+          scale=scale,
+          color=back,
+          font_color=font
+        })
+
+        self.createButton({             -- moved the change value to a separate button for more control
+          click_function='null',
+          function_owner=self,
+          height=0,
+          width=0,
+          font_size=400,
+          label='',
+          position={0-0.05,y,z+1},
+          hover_color={1,1,1,0.1},
+          scale=scale,
+          color=back,
+          font_color=font
+        })
+
+        for i,v in ipairs({             -- the side buttons
+            {n=1,l='▲',p={x*0.95,y,z+0.2}},
+            {n=-1,l='▼',p={-x,y,z+0.2}},
+            {n=20,l='+20',p={x*1.05,y,z-0.4}},
+            {n=-20,l='-20',p={-x*1.1,y,z-0.4}}}) do
+
+          local fn='valueChange'..i
+          self.setVar(fn, function(o,c,a) local b=1 if a then b=5 end click_changeValue(o,c,v.n*b) end)
+          self.createButton({
+            tooltip='Right-click for '..v.n*5,
+            label=v.l,
+            position=v.p,
+            click_function=fn,
+            function_owner=self,
+            height=800,
+            width=800,
+            font_size=700,
+            hover_color={1,1,1,0.1},
+            scale=scale2,
+            color=back,
+            font_color={font[1],font[2],font[3],50},
+          })
+        end
+
+        self.createButton({            -- reset life to 40 button
+          label='[R]',
+          click_function='resetLife',
+          tooltip='Reset Life',
+          function_owner=self,
+          position={x*0.72,y,z-1.05},
           height=800,
           width=800,
+          alignment = 3,
           font_size=700,
           hover_color={1,1,1,0.1},
           scale=scale2,
+          font_color={font[1],font[2],font[3],20},
           color=back,
-          font_color={font[1],font[2],font[3],50},
         })
       end
 
-      self.createButton({            -- reset life to 40 button
-        label='[R]',
-        click_function='resetLife',
-        tooltip='Reset Life',
-        function_owner=self,
-        position={x*0.72,y,z-1.05},
-        height=800,
-        width=800,
-        alignment = 3,
-        font_size=700,
-        hover_color={1,1,1,0.1},
-        scale=scale2,
-        font_color={font[1],font[2],font[3],20},
-        color=back,
-      })
+      function resetLife(obj,color)
+        --if color==owner then
+          sL(40,0)
+          count=40
+          printToAll(owner..'[999999] reset their life to [-]|'..count..'|',ownerRGB)
+          updateSave()
+        --end
+      end
+
+      function null()
+      end
+
+      x=1.2
+      y=0.07
+      z=-0.3
+      objsca = self.getScale()
+      scale  = {1,1,1}
+      scale2 = {0.3,1,0.3}
+      back = {0,0,0,0}
+      font = {1,1,1,100}
+      mode=''
+      ref_type=''
+      owner=''
+      C2=nil
+    ]]
+  )
+  return obj
+end
+
+function findSeats(a, i) -- Amount of players, Player number
+  transform = {}
+  if i ~= nil and a ~= nil then
+    off = 0
+    x = ( ( 44 * math.ceil( (i-2) / 4 ) ) * ( - 1 + ( ( math.ceil( i / 2 ) % 2 ) * 2 ) ) )
+    y = 14 - (28 * (i % 2))
+    if i % 2 == 1 then 
+      --Rotate ends to face
+      --TODO If over 8 or 10 have 2 facing ends
+      if a > 2 and a % 2 ~= 0 then
+        if a == i then
+          if i % 4 == 3 then
+            off = 90
+            x = x + 8
+          elseif i % 4 == 1 then
+            off = -90
+            x = x - 8
+          end
+          y = 0
+        end
+      end
+      --Center board cluster
+      if a > 2 and a ~= 10 then
+        if a % 2 == 0 then
+          x = x + 22
+        else
+          --[[  --This is supposed to center it if the last mat is rotated
+          if a % 4 == 3 then
+            x = x - 14
+          else
+            x = x + 14
+          end
+          ]]
+        end
+      end
+
+      if v ~= "Grey" and v ~= "Black" then
+      end
+      
     end
+    
+    transform = 
+    {
+      position          = { x, 0.5, y },
+      rotation          = {0, (off + 90) + (180 * (i % 2)), 0}
+    }
+    --print("Transform set: " .. tr.position)
+  else
+    print("Seat values nil")
+  end
+  return transform
+end
 
-    function resetLife(obj,color)
-      --if color==owner then
-        sL(40,0)
-        count=40
-        printToAll(owner..'[999999] reset their life to [-]|'..count..'|',ownerRGB)
-        updateSave()
-      --end
+
+
+--Old
+
+function circleColor()
+  
+  sx,sy = 10,15 -- size of tray
+  local x, y, r = 0, 0, 30 -- offset x, offset y, radious
+  local c = 10 -- Amount of points
+  for i,v in pairs(Player.getColors()) do
+    if v ~= "Grey" and v ~= "Black" then
+      --obj = spawnTray(Player[v],sx,0.25,sy)
+      obj = spawnHandTray(Player[v],sx,0.25,sy)
+      --obj = spawnZone(Player[v])
+      obj.setLock(true)
+      local angle = (i - 3.5) * math.pi / (c / 2)
+      local ptx, pty = x + r * math.cos(angle), y + r * math.sin(angle)
+      obj.setPosition(vector(ptx, 0.5, pty))
+      obj.setRotation(vector(0, 234 + ((i-2) * -360 / c), 0))
     end
-
-    function null()
-    end
-
-    x=1.2
-    y=0.07
-    z=-0.3
-    objsca = self.getScale()
-    scale  = {1,1,1}
-    scale2 = {0.3,1,0.3}
-    back = {0,0,0,0}
-    font = {1,1,1,100}
-    mode=''
-    ref_type=''
-    owner=''
-    C2=nil
-    ]])
-  obj13.setLock(true)
-  obj13.setScale({x=1, y=1 , z=1})
-  obj13.setPosition({x= 0, y=3.15, z=7})
-  obj.jointTo(obj13,{type= "Fixed", collision = false})
-  obj13.setLock(false)
-  obj13.interactable = false
-
+  end
 end
 
 function spawnHandTray(p)
@@ -930,4 +913,19 @@ function spawnTray(p, xSize, ySize, zSize)
   obj.addAttachment(obj4)
   obj.setLock(false)
   return obj
+end
+
+--Utilities
+
+function round(num, numDecimalPlaces)
+  local mult = 10^(numDecimalPlaces or 0)
+  return math.floor(num * mult + 0.5) / mult
+end
+
+function roundNumberToFactor(number, factor)
+  if(number % factor > factor/2) then
+      return number + (factor - (number % factor))
+  else
+      return number - (number % factor)
+  end
 end
