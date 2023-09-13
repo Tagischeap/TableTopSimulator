@@ -62,11 +62,10 @@ function circlePoint(i)
   }
 end
 
-
 function setup()
   removeCircles()
   --obj = spawnZone(Player["White"])
-  ammount = 10 -- How many mats Max:10
+  ammount = 3 -- How many mats Max:10
  --Mat stuff
   mats = Player.getColors();
   
@@ -77,7 +76,7 @@ function setup()
   end
 
  --
-  mats = getSeatedPlayers() --Comment this out for custom number of players.
+  --mats = getSeatedPlayers() --Comment this out for custom number of players.
   
  --Spawns everything
   for i,v in pairs(mats) do 
@@ -115,7 +114,6 @@ function setup()
       end
     end
   end
-  self.destruct()
 end
 
 
@@ -300,13 +298,14 @@ end
 
 function spawnExtras(p)
   extras = {}
+ --Hand Counter
   obj = spawnHandCounter(p)
   obj.setPosition({x=-5.8, y=0.6, z=-3})
   obj.setRotation({x=0, y=-90, z=0})
   obj.setLock(true)
   obj.interactable = false
   table.insert(extras, obj)
-
+ --Life
   obj2 = spawnLifeCounter(p)
   obj2.setPosition({x= -7, y=0.56, z=0})
   obj2.setRotation({x=0, y=-90, z=0})
@@ -315,8 +314,8 @@ function spawnExtras(p)
   obj2.interactable = false
   table.insert(extras, obj2)
   
-  --<Card Zones>
-  --Library
+ --<Card Zones>
+ --Library
   obj9 = spawnCardZone(p.color)
   obj9.setPosition({x= 8.5 -16, y=0.5, z= 22 - 2.5})
   table.insert(extras, obj9)
@@ -331,27 +330,41 @@ function spawnExtras(p)
   obj11.setPosition({x= 8.5 -16, y=0.5, z= 22 - 8.5})
   table.insert(extras, obj11)
   
-  --Commander 1
+ --Commander 1
   obj5 = spawnCardZone(p.color)
   obj5.setPosition({x= 8.5 -16, y=0.5, z= -(22 - 8.5)})
   table.insert(extras, obj5)
 
-  --Commander 2
+ --Commander 2
   obj4 = spawnCardZone(p.color)
   obj4.setPosition({x= 8.5 -16, y=0.5, z= -(22 - 5.5)})
   table.insert(extras, obj4)
 
-  --Extra
+ --Extra
   obj3 = spawnCardZone(p.color)
   obj3.setPosition({x= 8.5 -16, y=0.5, z= -(22 - 2.5)})
   table.insert(extras, obj3)
   
+  
+  local zone = spawnObject({
+    type = "ScriptingTrigger",
+    rotation          = {x=0, y=90, z=0},
+    scale             = {x=42, y=3, z=17.5},
+    position          = {x=4.25, y=1, z=0},
+    sound             = false,
+    snap_to_grid      = true,
+    ignore_fog_of_war	= true
+  })
+  table.insert(extras, zone)
 
+  obj8 = spawnUntapper(p.color, zone.getGUID())
+  obj8.setPosition({x= 8.5 -16 +1.75, y=1, z= 22 - 2.5 -10})
+  table.insert(extras, obj8)
   return extras
 end
 
 function spawnCardZone(color)
-  cardz = spawnObject({
+  local cardz = spawnObject({
     type = "BlockSquare",
     rotation          = {x=0, y=0, z=0},
     scale             = {x=3.25, y=0.25, z=2.35},
@@ -361,6 +374,7 @@ function spawnCardZone(color)
   })
   cardz.setColorTint(color)
   cardz.setLock(true)
+  cardz.interactable = false
   cardz.setSnapPoints({
     {
       position = cardz.getPosition(),
@@ -715,45 +729,115 @@ function spawnLifeCounter(p)
   return obj
 end
 
+function spawnUntapper(p,g)
+  local untapper = spawnObject({
+    type = "BlockSquare",
+    rotation          = {x=0, y=-90, z=0},
+    scale             = {x=1.25, y=0.10, z=1.25},
+    sound             = false,
+    snap_to_grid      = true,
+    ignore_fog_of_war	= true
+  })
+  untapper.setColorTint(p)
+  untapper.setLock(true)
+  untapper.interactable = false
+
+  untapper.setLuaScript(
+    [[
+      function onload(save_state)
+        self.createButton({ 
+          click_function = 'untap',
+          label = 'Untap',
+          function_owner = self,
+          position = {0, 1, 0},rotation = {0, 0, 0},
+          width = 500,
+          height = 300,
+          font_size = 150})
+        if self.getDescription()=='' then
+          setDefaultState()
+        end
+      end
+
+      function onSave()
+        return self.getDescription()
+      end
+
+      function setDefaultState()
+        self.setDescription(JSON.encode({zone="]].. g ..[[", flip="yes"}))
+      end
+
+      function split(s, delimiter)
+        result = {};
+        for match in (s..delimiter):gmatch("(.-)"..delimiter) do
+          table.insert(result, match);
+        end
+        return result;
+      end
+
+      function untap(clicked_object, player)
+        if self.getDescription()=="" then
+          setDefaultState()
+          printToAll('Warning - invalid description. Restored defaut configuration.', {0.8,0.5,0})
+        end
+
+        local data = JSON.decode(self.getDescription())
+        if data==nil then
+          setDefaultState()
+          data = JSON.decode(self.getDescription())
+          printToAll('Warning - invalid description. Restored defaut configuration.', {0.8,0.5,0})
+        end
+
+        for num,zoneGUID in pairs(split(data.zone, ";")) do
+          zone=getObjectFromGUID(zoneGUID)
+          if zone!=nil and zone.type=="Scripting" then
+            for k,v in pairs(zone.getObjects()) do
+              if v.type=="Card" then
+                if data.flip=="no" then
+                  v.setRotationSmooth({self.getRotation().x,self.getRotation().y,v.getRotation().z})
+                else
+                  v.setRotationSmooth(self.getRotation())
+                end
+              end
+            end
+          else
+            printToAll("I can't find zone from desctiption - " .. zoneGUID, {0.8,0.5,0})
+          end
+        end
+      end
+    ]]
+  )
+
+  return untapper
+end
+
 function findSeats(a, i) -- Amount of players, Player number
   transform = {}
   if i ~= nil and a ~= nil then
     off = 0
     x = ( ( 44 * math.ceil( (i-2) / 4 ) ) * ( - 1 + ( ( math.ceil( i / 2 ) % 2 ) * 2 ) ) )
     y = 14 - (28 * (i % 2))
-    if i % 2 == 1 then 
-      --Rotate ends to face
-      --TODO If over 8 or 10 have 2 facing ends
-      if a > 2 and a % 2 ~= 0 then
-        if a == i then
-          if i % 4 == 3 then
-            off = 90
-            x = x + 8
-          elseif i % 4 == 1 then
-            off = -90
-            x = x - 8
-          end
-          y = 0
-        end
+    print(i%2)
+    --Rotate ends to face
+    --TODO If over 8 or 10 have 2 facing ends
+    if i % 2 == 1 and  a > 2 and a % 2 ~= 0 and a == i then
+      if i % 4 == 3 then
+        off = 90
+        x = x + 8
+      elseif i % 4 == 1 then
+        off = -90
+        x = x - 8
       end
-      --Center board cluster
-      if a > 2 and a ~= 10 then
-        if a % 2 == 0 then
-          x = x + 22
-        else
-          --[[  --This is supposed to center it if the last mat is rotated
-          if a % 4 == 3 then
-            x = x - 14
-          else
-            x = x + 14
-          end
-          ]]
-        end
+      y = 0
+    end
+    --Centers cluster
+    if a > 2 and a ~= 10 then
+      if a % 2 == 0 then
+        x = x + 22
+      else
       end
-
-      if v ~= "Grey" and v ~= "Black" then
+      if a % 4 == 3 then
+        x = x + 14
       end
-      
     end
     
     transform = 
@@ -770,7 +854,7 @@ end
 
 
 
---Old
+ --Old
 
 function circleColor()
   
@@ -915,7 +999,7 @@ function spawnTray(p, xSize, ySize, zSize)
   return obj
 end
 
---Utilities
+ --Utilities
 
 function round(num, numDecimalPlaces)
   local mult = 10^(numDecimalPlaces or 0)
