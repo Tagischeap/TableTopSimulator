@@ -2,7 +2,7 @@ ply = {}
 function onload()
   self.addContextMenuItem("Setup", setup)
   self.addContextMenuItem("Circle", circleColor)
-  self.setPosition({0, 5, 0})
+  self.setPosition({0, 15, 0})
   self.setRotation({0, 0, 0})
   self.setScale({5,5,5})
   self.setLock(true)
