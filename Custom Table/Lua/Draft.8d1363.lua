@@ -147,112 +147,67 @@ function makeBoosters()
             end, 0.015 * s2, 1)
         end, 0.015 * s1, 1)
         Wait.condition(function() 
-            
+            for a = 1, 32 do
+            end
             pack = boosterBag.clone()
-            pack.setLock(true)
-            for i = 1, 15 do
+            --pack.setLock(true)
+
+            local p = {}
+            for i = 1, packSize do
                 local c
-                if i < 8 then
+                if i <= 10 then
                     c = c1[ math.random( #c1 ) ].clone()
-                elseif i < 13 then
+                elseif i <= 13 then
                     c = c2[ math.random( #c2 ) ].clone()
                 elseif i <= 14 then
                     c = c3[ math.random( #c3 ) ].clone()
                 end
-                c.setLock(false)
-                pack.putObject(c)
+                if c ~= nil then
+                    c.setLock(false)
+                    c.setPosition({0.75 * i, 0.1 * i, 0})
+                end
+                table.insert(p, c)
             end
+            local pa = group(p)
+
+            Wait.condition(function()
+                pack.putObject(pa)
+                pack.setPosition(tempPosition)
+                table.insert(boosterBox, pack)
+            end, function() return pa ~= nil end, 30, function() print("Time Out") end)
+            
+            Wait.time( function()
+                local ps = #boosterBox
+                local x, y, r, i = 0, 0, 25, 1
+
+                Wait.time( function()
+                    local angle = i * math.pi / (ps/2)--26
+                    local ptx, pty = x + r * math.cos(angle), y + r * math.sin(angle)
+                    local pos = {x = ptx, y = 3.5, z = pty}
+                    local rot = {x = 5, y = 90 + (i * -360 / ps), z = 125}
+                    -boosterBox[i].setPosition(pos, false, true)
+                    boosterBox[i].setRotation(rot, false, true)
+                    i = i + 1
+                end, 0.015, ps)
+
+                Wait.time( function()
+                    for i = 1, ps do
+                        boosterBox[i].unlock()
+                        local pos = boosterBox[i].getPosition()
+                        boosterBox[i].setPositionSmooth(pos, false, true)
+                        pos.y = 1.2
+
+                        Wait.time(function()
+                            boosterBox[i].interactable = true
+                        end, 1)
+
+                    end
+                end, 1.35, 1 )
+
+            end, 1.25 )
 
         end, function() return #c1 + #c2 + #c3 == s1 + s2 + s3 end, 30, function() print("Timed out.") end)
 
-        --[[
-        off = pos.y
-        for i,v in ipairs(t2.getObjects()) do
-            local c = t2.takeObject()
-            c.setLock(true)
-            c.setPosition({unc.getPosition().x, pos.y + off, pos.z})
-            off = off + 0.01
-        end
-        off = pos.y
-        for i,v in ipairs(t3.getObjects()) do
-            local c = t3.takeObject()
-            c.setLock(true)
-            c.setPosition({rar.getPosition().x, pos.y + off, pos.z})
-            off = off + 0.01
-        end]]
-
-        Wait.frames(function() 
-        end, 1)
-        --Making a booster "bag", and locking it
-        --[[
-            pack = boosterBag.clone()
-            pack.setLock(true)
-            
-            for i = 1, 14 do
-                local card = nil
-                pack.setPosition(tempPosition)
-                if i < 11 then
-                    pull = t1.getObjects()[1]
-                    --pull = t1.takeObject(tempPosition)
-                    --pull.setLock(true)
-                    card = pull.clone(tempPosition)
-                    --t1.putObject(pull)
-                else
-                    if i < 14 then
-                        pull = t2.getObjects()[1]
-                        -- pull = t2.takeObject(tempPosition)
-                        --pull.setLock(true)
-                        card = pull.clone(tempPosition)
-                        --t2.putObject(pull)
-                    else 
-                        pull = t3.getObjects()[1]
-                        --pull = t3.takeObject(tempPosition)
-                        --pull.setLock(true)
-                        card = pull.clone(tempPosition)
-                        --t3.putObject(pull)
-                    end
-                end
-                card.setLock(true)
-                card.setInvisibleTo(Player.GetColors())
-                card.setRotation(pack.getRotation())
-                card.setLock(false)
-                pack.putObject(card)
-            end
-            tempPosition.y = tempPosition.y + 0.25
-            table.insert(boosterBox, pack)
-            
-            Wait.frames(function()
-                Wait.frames(function()
-                    for n = 1, 36 do
-                    end
-                end, 1)
-            end, 1)
-        end, 1)
-        
-        Wait.time( function()
-            local ps = #boosterBox
-            local x, y, r, i = 0, 0, 25, 1
-            Wait.time( function()
-                local angle = i * math.pi / (ps/2)--26
-                local ptx, pty = x + r * math.cos(angle), y + r * math.sin(angle)
-                local pos = {x = ptx, y = 3.5, z = pty}
-                local rot = {x = 5, y = 90 + (i * -360 / ps), z = 125}
-                -boosterBox[i].setPosition(pos, false, true)
-                boosterBox[i].setRotation(rot, false, true)
-                i = i + 1
-            end, 0.015, ps)
-            Wait.time( function()
-                for i = 1, ps do
-                    boosterBox[i].unlock()
-                    local pos = boosterBox[i].getPosition()
-                    boosterBox[i].setPositionSmooth(pos, false, true)
-                    pos.y = 1.2
-                    Wait.time(function()
-                        boosterBox[i].interactable = true
-                    end, 1)
-                end
-            end, 1.35, 1 )
-            ]]
     end, 1.25 )
-        
+
 end
