@@ -62,14 +62,20 @@ function onObjectLeaveContainer(bag, obj)
 end
 
 function onLoad(obj)
-    self.addDecal(
+    self.setDecals({
         {
             name = "WOE",
             url = "https://gatherer.wizards.com/Handlers/Image.ashx?type=symbol&set=WOE&size=large&rarity=M",
             position = {0, 0.21, 1},
             rotation = {90, 180, 0},
-            scale = {1.5,1.5,1}
-        })
+            scale = {1.25,1.25,1}
+        },{
+            name = "WOE",
+            url = "https://gatherer.wizards.com/Handlers/Image.ashx?type=symbol&set=WOE&size=large&rarity=M",
+            position = {0, -0.21, 1},
+            rotation = {-90, 0, 0},
+            scale = {1.25,1.25,1}
+        }})
     --[[
     if obj == self and cube == "" then
         --Makes a cube on spawn
