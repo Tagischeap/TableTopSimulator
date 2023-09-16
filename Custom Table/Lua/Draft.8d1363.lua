@@ -169,12 +169,17 @@ function makeBoosters()
                 table.insert(p, c)
             end
             local pa = group(p)
-
             Wait.condition(function()
-                pack.putObject(pa)
-                pack.setPosition(tempPosition)
-                table.insert(boosterBox, pack)
-            end, function() return pa ~= nil end, 30, function() print("Time Out") end)
+                    pack.putObject(pa)
+                    pack.setPosition(tempPosition)
+                    table.insert(boosterBox, pack)
+            end, function() 
+                if pa ~= nil then
+                    return (table.getn(pa) >= 14)
+                else
+                    return false 
+                end 
+            end, 30, function() print("Time Out") end)
             
             Wait.time( function()
                 local ps = #boosterBox

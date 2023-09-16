@@ -25,7 +25,7 @@ function onObjectLeaveContainer(bag, obj)
                 c = {}
                 for i = 1, siz do 
                     c[i] = obj.takeObject({
-                        flip     = false,
+                        flip     = true,
                         smooth   = false, 
                         callback_function = function(obj)
                             obj.setLock(true)
@@ -36,7 +36,7 @@ function onObjectLeaveContainer(bag, obj)
                 end
                 Wait.frames(function()
                     for i = 1, #c do
-                        c[i].setPositionSmooth(tr.position + (tr.forward * 6), false, false)
+                        c[i].setPositionSmooth(tr.position + (tr.forward * 6) + {x=10,y=0,z=0}, false, false)
                         c[i].setRotation({x = 180, y = tr.rotation.y, z = 0})
                         c[i].setLock(true)
                     end
@@ -44,8 +44,8 @@ function onObjectLeaveContainer(bag, obj)
                         Wait.time(function()
                             i = i + 1
                             pop = (tr.forward * (tr.scale.z - 1)) + (tr.right * -(tr.scale.x - 1))
-                            c[i].setPositionSmooth(tr.position, false, false)
-                            c[i].setRotationSmooth({x = 0, y = tr.rotation.y + 180, z = 0}, false, false)
+                            c[i].setPositionSmooth(tr.position + {x=8,y=0,z=0}, false, false)
+                            c[i].setRotationSmooth({x = 0, y = tr.rotation.y - 180, z = 0}, false, false)
                             c[i].setLock(false)
                         end, 0.075, #c)
                     end, 0.5)
@@ -61,7 +61,16 @@ function onObjectLeaveContainer(bag, obj)
     end
 end
 
-function onObjectSpawn(obj)
+function onLoad(obj)
+    self.addDecal(
+        {
+            name = "WOE",
+            url = "https://gatherer.wizards.com/Handlers/Image.ashx?type=symbol&set=WOE&size=large&rarity=M",
+            position = {0, 0.21, 1},
+            rotation = {90, 180, 0},
+            scale = {1.5,1.5,1}
+        })
+    --[[
     if obj == self and cube == "" then
         --Makes a cube on spawn
         cube = spawnObject({
@@ -89,4 +98,5 @@ function onObjectSpawn(obj)
             cube.setLock(false)
         end, 1)
     end 
+    ]]
 end
