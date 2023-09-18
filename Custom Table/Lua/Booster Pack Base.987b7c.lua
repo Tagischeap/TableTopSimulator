@@ -36,7 +36,7 @@ function onObjectLeaveContainer(bag, obj)
                 end
                 Wait.frames(function()
                     for i = 1, #c do
-                        c[i].setPositionSmooth(tr.position + (tr.forward * 6) + {x=10,y=0,z=0}, false, false)
+                        c[i].setPositionSmooth(tr.position + (tr.forward * 6) + {x=tr.scale.x,y=0,z=0}, false, false)
                         c[i].setRotation({x = 180, y = tr.rotation.y, z = 0})
                         c[i].setLock(true)
                     end
