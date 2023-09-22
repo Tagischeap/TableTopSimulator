@@ -1,5 +1,5 @@
 ply = {}
-mats = getSeatedPlayers()
+mats = {}
 
 
 function onload()
@@ -79,8 +79,8 @@ end
 function setup()
   removeCircles()
   --obj = spawnZone(Player["White"])
+  mats = getSeatedPlayers()
 
- --
  --Spawns everything
   for i,v in pairs(mats) do 
     --Spawns stuff
@@ -368,10 +368,7 @@ function spawnExtras(p)
     type = "ScriptingTrigger",
     rotation          = {x=0, y=90, z=0},
     scale             = {x=42, y=3, z=17.5},
-    position          = {x=4.25, y=1, z=0},
-    sound             = false,
-    snap_to_grid      = true,
-    ignore_fog_of_war	= true
+    position          = {x=4.25, y=1, z=0}
   })
   table.insert(extras, zone)
 
@@ -399,6 +396,20 @@ function spawnExtras(p)
     }
   )
   table.insert(extras, secondHand)
+
+  thirdHand = spawnObject(
+    {
+      type              = "HandTrigger",
+      color             = v,
+      position          = {x= 5 -16, y=3.5, z= -22 + 5.65},
+      scale             = {x= 9.25, y=6, z=2},
+      rotation          = {x=0,y=90,z=0},
+      sound             = false,
+      snap_to_grid      = true,
+      ignore_fog_of_war	= true
+    }
+  )
+  table.insert(extras, thirdHand)
 
   return extras
 end
