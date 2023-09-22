@@ -1,10 +1,14 @@
 ply = {}
+mats = getSeatedPlayers()
+
+
 function onload()
+  --setMats(5)
   self.addContextMenuItem("Setup", setup)
   self.addContextMenuItem("Circle", circleColor)
-  self.setPosition({0, 15, 0})
+  self.setPosition({0, 1, 0})
   self.setRotation({0, 0, 0})
-  self.setScale({5,5,5})
+  self.setScale({2,1,2})
   self.setLock(true)
   --spawnCircles()
 end
@@ -62,22 +66,21 @@ function circlePoint(i)
   }
 end
 
-function setup()
-  removeCircles()
-  --obj = spawnZone(Player["White"])
-  ammount = 3 -- How many mats Max:10
- --Mat stuff
-  mats = Player.getColors();
-  
+function setMats(c)
+  ammount = c -- How many mats Max:10
+  mats = Player.getColors()
   table.remove(mats) -- Remove Black
   table.remove(mats) -- Remove Grey
   for i = 1,#mats - ammount, 1 do
     table.remove(mats) -- Remove
   end
+end
+
+function setup()
+  removeCircles()
+  --obj = spawnZone(Player["White"])
 
  --
-  --mats = getSeatedPlayers() --Comment this out for custom number of players.
-  
  --Spawns everything
   for i,v in pairs(mats) do 
     --Spawns stuff
@@ -111,11 +114,12 @@ function setup()
         -- Set the new position and rotation
         b.setPosition(fixpos)
         b.setRotation(fixrot)
+        b.interactable = false
+        
       end
     end
   end
 end
-
 
 function spawnZone(p)
  --[[
@@ -129,7 +133,7 @@ function spawnZone(p)
   obj.setLock(false)
   ]]
  --|
-
+  self.setPosition({0, -15, 0})
   --print("" .. xSize .. " " .. ySize .. " " .. zSize)
   size = vector(28, 0.25, 44)
 
@@ -223,13 +227,12 @@ function spawnZone(p)
 
   -- X = left, Y = Height, Z = Up
 
-
  --Hand
   lua = "p = Player." .. p.color ..
   [=[
 
     off = vector( 0, 3, -11 )
-    sca = vector(16, 6, 4)
+    sca = vector(23.50, 6, 3)
     up = false
     function onLoad(save_state)
         self.addContextMenuItem("Reposition Hand", fixPosition)
@@ -292,15 +295,16 @@ function spawnZone(p)
 
   --
   obj.interactable = false
-  return obj
 
+  
+  return obj
 end
 
 function spawnExtras(p)
   extras = {}
  --Hand Counter
   obj = spawnHandCounter(p)
-  obj.setPosition({x=-5.8, y=0.6, z=-3})
+  obj.setPosition({x=-6.25, y=0.6, z=-4})
   obj.setRotation({x=0, y=-90, z=0})
   obj.setLock(true)
   obj.interactable = false
@@ -310,10 +314,25 @@ function spawnExtras(p)
   obj2.setPosition({x= -7, y=0.56, z=0})
   obj2.setRotation({x=0, y=-90, z=0})
   obj2.setLock(true)
-  obj2.setLock(true)
   obj2.interactable = false
   table.insert(extras, obj2)
-  
+ --Commander Damage
+  local ni = 0
+  for i,v in pairs(mats) do
+    if v ~= p.color then
+      ni = ni + 1
+      cd = spawnCommanderDamage(p)
+      cd.setPosition({x= -4.5, y=0.575, 
+      z=( (ni * 1.25) - (((#mats) * 1.25) / 2) )})
+      cd.setRotation({x=0, y=-90, z=0})
+      cd.setColorTint(v)
+      cd.setLock(true)
+      cd.interactable = false
+      table.insert(extras, cd)
+    else
+
+    end
+  end
  --<Card Zones>
  --Library
   obj9 = spawnCardZone(p.color)
@@ -345,7 +364,6 @@ function spawnExtras(p)
   obj3.setPosition({x= 8.5 -16, y=0.5, z= -(22 - 2.5)})
   table.insert(extras, obj3)
   
-  
   local zone = spawnObject({
     type = "ScriptingTrigger",
     rotation          = {x=0, y=90, z=0},
@@ -358,8 +376,30 @@ function spawnExtras(p)
   table.insert(extras, zone)
 
   obj8 = spawnUntapper(p.color, zone.getGUID())
-  obj8.setPosition({x= 8.5 -16 +1.75, y=1, z= 22 - 2.5 -10})
+  obj8.setPosition({x= 8.5 -16 +1.75, y=0.525, z= 22 - 2.5 -10})
   table.insert(extras, obj8)
+
+  --[[
+  obj9 = spawnDrawer(p.color, zone.getGUID())
+  obj9.setPosition({x= 8.5 -16 +1.75, y=0.5, z= 22 - 2.5 -11.5})
+  table.insert(extras, obj9)
+  ]]
+
+
+  secondHand = spawnObject(
+    {
+      type              = "HandTrigger",
+      color             = v,
+      position          = {x= 5 -16, y=3.5, z= 22 - 5.65},
+      scale             = {x= 9.25, y=6, z=2},
+      rotation          = {x=0,y=90,z=0},
+      sound             = false,
+      snap_to_grid      = true,
+      ignore_fog_of_war	= true
+    }
+  )
+  table.insert(extras, secondHand)
+
   return extras
 end
 
@@ -434,6 +474,7 @@ function spawnHandCounter(p)
 
       function update()
           if not owner then return end
+          if owner.getHandTransform() == nill then return end
           self.editButton({index=0, label=#owner.getHandObjects()})
           self.setName(#owner.getHandObjects())
       end
@@ -484,7 +525,7 @@ function spawnHandCounter(p)
           self.clearButtons()
           self.createButton({
               label=tostring(objectCount), click_function="onClick", function_owner=self,
-              position={0.4,0.07,-1.0}, height=0, width=0; font_size=650
+              position={0.4,0.15,-1.0}, height=0, width=0; font_size=650
           })
       end
 
@@ -713,7 +754,7 @@ function spawnLifeCounter(p)
       end
 
       x=1.2
-      y=0.07
+      y=0.15
       z=-0.3
       objsca = self.getScale()
       scale  = {1,1,1}
@@ -729,15 +770,218 @@ function spawnLifeCounter(p)
   return obj
 end
 
-function spawnUntapper(p,g)
-  local untapper = spawnObject({
-    type = "BlockSquare",
-    rotation          = {x=0, y=-90, z=0},
-    scale             = {x=1.25, y=0.10, z=1.25},
+function spawnCommanderDamage(p)
+  local obj = spawnObject({
+    type = "Custom_Token",
+    scale             = {x=0.32, y=1 , z=0.32},
+  })
+  obj.setCustomObject({
+    image             = "http://cloud-3.steamusercontent.com/ugc/1009313481328783631/DDCC83524ED154C1F937AC5319E4903077E4A335/",
+    collision         = false,
+    thickness         = 0.15,
     sound             = false,
     snap_to_grid      = true,
     ignore_fog_of_war	= true
   })
+  obj.setLuaScript(
+    [[
+    MIN_VALUE = 0
+    MAX_VALUE = 21
+    
+    function onload(saved_data)
+      val = 0
+      if saved_data ~= "" then
+        local loaded_data = JSON.decode(saved_data)
+        val = loaded_data[1]
+      end
+      createAll()
+    end
+    
+    function updateSave()
+      local data_to_save = {val}
+      saved_data = JSON.encode(data_to_save)
+      self.script_state = saved_data
+    end
+    
+    function createAll()
+      s_color = {0.5, 0.5, 0.5, 95}
+      f_color = {0.9,0.9,0.9,100}
+      
+      if tooltip_show then
+        ttText = "     " .. val .. "\n" .. self.getName()
+      else
+        ttText = self.getName()
+      end
+      
+      self.createButton({
+        label=tostring(val),
+        click_function="null",
+        tooltip=ttText,
+        function_owner=self,
+        position={0-0.1,0.1,0+0.1},
+        height=0,
+        width=0,
+        scale={1.65, 1.65, 1.65},
+        font_size=800,
+        font_color={1-f_color[1],1-f_color[2],1-f_color[3],95},
+        color={0,0,0,0}
+      })
+      
+      self.createButton({
+        label=tostring(val),
+        click_function="add_subtract",
+        tooltip=ttText,
+        function_owner=self,
+        position={0-0.04,0.18,0-0.04},
+        height=500,
+        width= 500,
+        scale={1.65, 1.65, 1.65},
+        font_size=800,
+        font_color={0.1,0.1,0.1,100},
+        color={0,0,0,0}
+      })
+      
+      self.createButton({
+        label=tostring(val),
+        click_function="add_subtract",
+        tooltip=ttText,
+        function_owner=self,
+        position={0-0.04,0.18,0+0.04},
+        height=500,
+        width= 500,
+        scale={1.65, 1.65, 1.65},
+        font_size=800,
+        font_color={0.1,0.1,0.1,100},
+        color={0,0,0,0}
+      })
+      
+      self.createButton({
+        label=tostring(val),
+        click_function="add_subtract",
+        tooltip=ttText,
+        function_owner=self,
+        position={0+0.04,0.18,0-0.04},
+        height=500,
+        width= 500,
+        scale={1.65, 1.65, 1.65},
+        font_size=800,
+        font_color={0.1,0.1,0.1,100},
+        color={0,0,0,0}
+      })
+      
+      self.createButton({
+        label=tostring(val),
+        click_function="add_subtract",
+        tooltip=ttText,
+        function_owner=self,
+        position={0+0.04,0.18,0+0.04},
+        height=500,
+        width= 500,
+        scale={1.65, 1.65, 1.65},
+        font_size=800,
+        font_color={0.1,0.1,0.1,100},
+        color={0,0,0,0}
+      })
+      
+      self.createButton({
+        label=tostring(val),
+        click_function="add_subtract",
+        tooltip=ttText,
+        function_owner=self,
+        position={0,0.18,0},
+        height=500,
+        width= 500,
+        scale={1.65, 1.65, 1.65},
+        font_size=800,
+        font_color=f_color,
+        color={0,0,0,0}
+      })
+      
+      self.createButton({
+        label='[R]',
+        tooltip='Reset',
+        click_function="reset_val",
+        function_owner=self,
+        position={0-0.04,0.1,1.3+0.04},
+        rotation={0,0,0},
+        height=400,
+        width=600,
+        scale={x=0.5, y=0.5, z=0.5},
+        font_size=600,
+        font_color={1-f_color[1],1-f_color[2],1-f_color[3],95},
+        color={0,0,0,0}
+      })
+      
+      self.createButton({
+        label='[R]',
+        tooltip='Reset',
+        click_function="reset_val",
+        function_owner=self,
+        position={0,0.1,1.3},
+        rotation={0,0,0},
+        height=400,
+        width=600,
+        scale={x=0.5, y=0.5, z=0.5},
+        font_size=600,
+        font_color=f_color,
+        color={0,0,0,0}
+      })
+      
+    end
+    
+    function add_subtract(_obj, _color, alt_click)
+      mod = alt_click and -1 or 1
+      new_value = math.min(math.max(val + mod, MIN_VALUE), MAX_VALUE)
+      if val ~= new_value then
+        val = new_value
+        updateVal()
+        updateSave()
+      end
+    end
+    
+    function updateVal()
+      if tooltip_show then
+        ttText = "     " .. val .. "\n" .. self.getName()
+      else
+        ttText = self.getName()
+      end
+      
+      for ind=0,5,1 do
+        self.editButton({
+          index = ind,
+          label = tostring(val),
+          tooltip = ttText
+        })
+      end
+      
+    end
+    
+    function reset_val()
+      val = 0
+      updateVal()
+      updateSave()
+    end
+    
+    function null()
+    end
+    ]]
+  )
+  return obj
+end
+
+function spawnUntapper(p,g)
+  local untapper = spawnObject({
+    type = "BlockSquare",
+    rotation          = {x=0, y=-90, z=0},
+    scale             = {x=1.25, y=0.25, z=1.25},
+    sound             = false,
+    snap_to_grid      = true,
+    ignore_fog_of_war	= true
+  })
+  local lc = stringColorToRGB(p)
+  lc.r = lc.r + 0.4
+  lc.g = lc.g + 0.4
+  lc.b = lc.b + 0.4
   untapper.setColorTint(p)
   untapper.setLock(true)
   untapper.interactable = false
@@ -748,10 +992,11 @@ function spawnUntapper(p,g)
         self.createButton({ 
           click_function = 'untap',
           label = 'Untap',
-          function_owner = self,
-          position = {0, 1, 0},rotation = {0, 0, 0},
+          function_owner = self, 
+          color = {]] .. "r=".. lc.r .. ",b=".. lc.b .. ",g=".. lc.g  .. [[},
+          position = {0, 0.55, 0},rotation = {0, 0, 0},
           width = 500,
-          height = 300,
+          height = 500,
           font_size = 150})
         if self.getDescription()=='' then
           setDefaultState()
@@ -810,13 +1055,51 @@ function spawnUntapper(p,g)
   return untapper
 end
 
+function spawnDrawer(p,g)
+  local button = spawnObject({
+    type = "BlockSquare",
+    rotation          = {x=0, y=-90, z=0},
+    scale             = {x=1.25, y=0.25, z=1.25},
+    sound             = false,
+    snap_to_grid      = true,
+    ignore_fog_of_war	= true
+  })
+  button.setColorTint(p)
+  button.setLock(true)
+  button.interactable = false
+
+  button.setLuaScript(
+    [[
+      function onload(save_state)
+        self.createButton({ 
+          click_function = 'draw',
+          label = 'Draw',
+          function_owner = self,
+          position = {0, 0.55, 0},rotation = {0, 0, 0},
+          width = 500,
+          height = 500,
+          font_size = 150})
+        if self.getDescription()=='' then
+          setDefaultState()
+        end
+      end
+
+      function draw(clicked_object, player)
+
+      end
+    ]]
+  )
+
+  return button
+end
+
 function findSeats(a, i) -- Amount of players, Player number
   transform = {}
   if i ~= nil and a ~= nil then
     off = 0
     x = ( ( 44 * math.ceil( (i-2) / 4 ) ) * ( - 1 + ( ( math.ceil( i / 2 ) % 2 ) * 2 ) ) )
     y = 14 - (28 * (i % 2))
-    print(i%2)
+    --print(i%2)
     --Rotate ends to face
     --TODO If over 8 or 10 have 2 facing ends
     if i % 2 == 1 and  a > 2 and a % 2 ~= 0 and a == i then
@@ -852,9 +1135,7 @@ function findSeats(a, i) -- Amount of players, Player number
   return transform
 end
 
-
-
- --Old
+--Old
 
 function circleColor()
   
@@ -999,7 +1280,7 @@ function spawnTray(p, xSize, ySize, zSize)
   return obj
 end
 
- --Utilities
+--Utilities
 
 function round(num, numDecimalPlaces)
   local mult = 10^(numDecimalPlaces or 0)
