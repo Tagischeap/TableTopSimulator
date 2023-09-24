@@ -1,4 +1,5 @@
 cube = ""
+set = "NEO"
 function filterObjectEnter(obj)
     if self.getQuantity() < 1 then
         return true
@@ -36,7 +37,7 @@ function onObjectLeaveContainer(bag, obj)
                 end
                 Wait.frames(function()
                     for i = 1, #c do
-                        c[i].setPositionSmooth(tr.position + (tr.forward * 6) + {x=tr.scale.x,y=0,z=0}, false, false)
+                        c[i].setPositionSmooth(tr.position + (tr.forward * 1) + {x=(tr.scale.x/2),y=0,z=0}, false, false)
                         c[i].setRotation({x = 180, y = tr.rotation.y, z = 0})
                         c[i].setLock(true)
                     end
@@ -65,18 +66,18 @@ function onLoad(obj)
     self.setDecals({
         {
             name = "WOE",
-            url = "https://gatherer.wizards.com/Handlers/Image.ashx?type=symbol&set=WOE&size=large&rarity=M",
+            url = "https://gatherer.wizards.com/Handlers/Image.ashx?type=symbol&set="..set.."&size=large&rarity=M",
             position = {0, 0.21, 1},
             rotation = {90, 180, 0},
             scale = {1.25,1.25,1}
         },{
             name = "WOE",
-            url = "https://gatherer.wizards.com/Handlers/Image.ashx?type=symbol&set=WOE&size=large&rarity=M",
+            url = "https://gatherer.wizards.com/Handlers/Image.ashx?type=symbol&set="..set.."&size=large&rarity=M",
             position = {0, -0.21, 1},
             rotation = {-90, 0, 0},
             scale = {1.25,1.25,1}
-        }})
-    --[[
+        }
+    })
     if obj == self and cube == "" then
         --Makes a cube on spawn
         cube = spawnObject({
@@ -100,9 +101,7 @@ function onLoad(obj)
                 ["break_force"]  = 0,
                 ["break_torgue"] = 0,
             })
-            
             cube.setLock(false)
         end, 1)
-    end 
-    ]]
+    end
 end
