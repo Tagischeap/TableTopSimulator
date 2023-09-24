@@ -254,7 +254,7 @@ function createStandard()
     --number_of_rares = rares_counter.getValue()
 
     number_of_commons = 10
-    number_of_uncommons = 4
+    number_of_uncommons = 3
     number_of_rares = 1
 
     if foilCheck() == true and number_of_commons > 0 then
@@ -493,7 +493,7 @@ function generateZones()
           type = "ScriptingTrigger",
           rotation          = {x=0, y=90, z=0},
           scale             = scl,
-          position          = {x=3 * i, y=3.5, z=0}
+          position          = {x=3 * i, y=3, z=0}
         })
         table.insert(zones, zone.getGUID())
     end
@@ -526,7 +526,7 @@ end
 
 function onload()
     math.randomseed(os.time())
-    generateZones()
+    self.addContextMenuItem("Zones", generateZones)
     --generateInterface()
     self.addContextMenuItem("Standard Pack", createStandard)
 end

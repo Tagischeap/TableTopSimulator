@@ -17,7 +17,7 @@ function onObjectLeaveContainer(bag, obj)
             col = obj.held_by_color
             tr = Player[col].getHandTransform()
             obj.setName("Booster Pack: " .. col)
-            if obj.held_by_color != "Black" and #Player[col].getHandObjects() == 0 then
+            if obj.held_by_color != "Black"--[[ and #Player[col].getHandObjects() == 0 ]]then
                 --obj.deal(obj.getQuantity(),obj.held_by_color,1)
                 siz = obj.getQuantity()
                 obj.setLock(true)
