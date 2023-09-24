@@ -1,14 +1,19 @@
 ply = {}
 mats = {}
-ammount = 5
+ammount = 0
 playerHand = ""
 handCounter = ""
 lifeCounter = ""
+CardImporterGUID = "d936a8"
+CardImporter = nil
+DrafterGUID = "488f9f"
+Drafter = nil
 
 function onload()
   self.addContextMenuItem("Setup", setup)
   self.addContextMenuItem("Circle", circleColor)
-  self.setPosition({0, 1, 0})
+  self.addContextMenuItem("Spawn Booster", spawnSet)
+  self.setPosition({0, 0.75, 0})
   self.setRotation({0, 0, 0})
   self.setScale({2,1,2})
   self.setLock(true)
@@ -38,6 +43,9 @@ function onload()
       lifeCounter = request.text
     end
   end)
+
+  CardImporter = getObjectFromGUID(CardImporterGUID)
+  Drafter = getObjectFromGUID(DrafterGUID)
 
 end
 
@@ -106,10 +114,10 @@ function setMats(c)
 end
 
 function setup()
-  --self.setPosition({0, -15, 0})
-
+  clearPly()
+  self.setPosition({-150, 5, 150})
   if #ply > 0 then
-    positionSeat(5,ply)
+    --positionSeat(5,ply)
   return end 
 
   --obj = spawnZone(Player["White"])
@@ -156,8 +164,75 @@ function setup()
   end
 end
 
-function setupPods()
+function setupSealed()
 
+  for i,k in pairs(ply) do
+    local y = 0
+    Wait.time(function() 
+      local pos = k[1].getPosition()
+      pos.x = pos.x + (y*3.5)
+      pos.y = 1
+      local p = getSeatedPlayers()[1]
+      local data = "neo"
+      CardImporter = getObjectFromGUID(CardImporterGUID)
+      local t ={
+        position={pos.x, pos.y + 2, pos.z},
+        player=Player[p].steam_id,
+        color=Player[p].color,
+        full=data,
+        mode="Booster",--data:gsub('(http%S+)',''):match('(%S+)'),
+        name=data:gsub('(http%S+)',''):gsub(' ',''),
+        url=data:match('(http%S+)')
+      }
+      CardImporter.call('Importer', t)
+      
+      pack = spawnEmptyPack().setPosition(pos)
+      --Wait.condition(function() pack.setRotation(k[1].getRotation()) end, function() return pack.getQuantity() ~= 0 end, 20, function() end)
+      y = y+1
+    end, 5*#ply, 6)
+  end
+end
+
+function spawnSet() --Spawns a set
+  local set = "neo"
+  local y=0
+  local pos = self.getPosition()
+  local zones = Drafter.getVar("zones")
+  pos.y = 3
+  pos.x = pos.x + 3
+  local p = getSeatedPlayers()[1]
+  local data = "set=neo r=c c="
+  for i=0,5 do
+    data = "-t%3Abasic+in%3Abooster+set%3A"..set.."+r%3Ac+c%3A"
+    if i == 0 then
+      data = data .. "w"
+    elseif i == 1 then
+      data = data .. "u"
+    elseif i == 2 then
+      data = data .. "b"
+    elseif i == 3 then
+      data = data .. "r"
+    elseif i == 4 then
+      data = data .. "g"
+    elseif i == 5 then
+      data = data .. "c"
+    end
+    --pos.x = pos.x + 2.5
+    zon = getObjectFromGUID(zones[i+1])
+    pos = zon.getPosition()
+    searchScryfall(data,pos)
+  end
+  
+
+  --pack = spawnEmptyPack().setPosition(pos)
+end
+
+function spawnEmptyPack()
+  return getObjectFromGUID("987b7c").clone()
+end
+
+function setupPods()
+--TODO: Different 1v1 groups
 end
 
 function positionSeat(a,p)
@@ -283,14 +358,25 @@ function spawnZone(p)
  --
 
  --Hand
- local lua = "p = Player." .. p.color .. playerHand
+ local lua = "p = Player." .. p.color .. playerHand .. [[
+  function onPlayerTurnStart(player_color_start, player_color_previous)
+    c = stringColorToRGB(p.color)
+    if player_color_start == p.color then
+      self.setColorTint( {r = c.r, g = c.g, b = c.b, a = 75/255} )
+    else
+      self.setColorTint( {r = c.r, g = c.g, b = c.b, a = 5/255} )
+    end
+  end
+ ]]
   obj.setLuaScript(lua)
   --obj.call('fixPosition')
-  obj.interactable = false
+  --obj.interactable = false
   
   obj.setName(p.color .. " zone")
   return obj
 end
+  
+
 
 function spawnExtras(p)
   local extras = {}
@@ -373,26 +459,24 @@ function spawnExtras(p)
   obj9.setPosition({x= 8.5 -16 +1.75, y=0.5, z= 22 - 2.5 -11.5})
   table.insert(extras, obj9)
   ]]
-
-
   local secondHand = spawnObject(
     {
       type              = "HandTrigger",
-      color             = v,
       position          = {x= 5 -16, y=3.5, z= 22 - 5.65},
       scale             = {x= 9.25, y=6, z=2},
       rotation          = {x=0,y=90,z=0},
       sound             = false,
       snap_to_grid      = true,
-      ignore_fog_of_war	= true
+      ignore_fog_of_war	= true,
     }
   )
+  secondHand.setValue(p.color)
   table.insert(extras, secondHand)
 
   local thirdHand = spawnObject(
     {
       type              = "HandTrigger",
-      color             = v,
+      FogColor             = p.color,
       position          = {x= 5 -16, y=3.5, z= -22 + 5.65},
       scale             = {x= 9.25, y=6, z=2},
       rotation          = {x=0,y=90,z=0},
@@ -401,6 +485,7 @@ function spawnExtras(p)
       ignore_fog_of_war	= true
     }
   )
+  thirdHand.setValue(p.color)
   table.insert(extras, thirdHand)
 
   return extras
@@ -467,7 +552,7 @@ function spawnLifeCounter(p)
   return obj
 end
 
-function spawnCommanderDamage(p)
+function spawnCommanderDamage(p) --Spawns Commander Damage Counter
   local obj = spawnObject({
     type = "Custom_Token",
     scale             = {x=0.32, y=1 , z=0.32},
@@ -666,7 +751,7 @@ function spawnCommanderDamage(p)
   return obj
 end
 
-function spawnUntapper(p,g)
+function spawnUntapper(p,g) --Spawns Untapper Button
   local untapper = spawnObject({
     type = "BlockSquare",
     rotation          = {x=0, y=-90, z=0},
@@ -752,7 +837,7 @@ function spawnUntapper(p,g)
   return untapper
 end
 
-function spawnDrawer(p,g)
+function spawnDrawer(p,g) --TODO:Spawns Draw Button
   local button = spawnObject({
     type = "BlockSquare",
     rotation          = {x=0, y=-90, z=0},
@@ -832,10 +917,28 @@ function findSeats(a, i) -- Amount of players, Player number
   return transform
 end
 
+function clearPly() --Delete Playmats
+  if #ply > 0 and ply ~= nil then 
+    print(#ply)
+    for i,j in pairs(ply) do
+      print(j)
+      if j ~= nil then
+        j[1].destruct()
+        for l,y in pairs(j[2]) do
+         y.destruct()
+         y = nil
+        end
+      end
+      ply[i] = nil
+    end
+    ply = {}
+  end
+end
+
 --Old
 
 function circleColor()
-  
+  clearPly()
   sx,sy = 10,15 -- size of tray
   local x, y, r = 0, 0, 30 -- offset x, offset y, radious
   local c = 10 -- Amount of points
@@ -849,6 +952,8 @@ function circleColor()
       local ptx, pty = x + r * math.cos(angle), y + r * math.sin(angle)
       obj.setPosition(vector(ptx, 0.5, pty))
       obj.setRotation(vector(0, 234 + ((i-2) * -360 / c), 0))
+
+      table.insert(ply, obj)
     end
   end
 end
@@ -978,6 +1083,21 @@ function spawnTray(p, xSize, ySize, zSize)
 end
 
 --Utilities
+
+function searchScryfall(data,pos) --Uses the Card Importer to spawn a search
+  local p = getSeatedPlayers()[1]
+  CardImporter = getObjectFromGUID(CardImporterGUID)
+  local t ={
+    position={pos.x, pos.y + 2, pos.z},
+    player=Player[p].steam_id,
+    color=Player[p].color,
+    full=data,
+    mode="Search",--data:gsub('(http%S+)',''):match('(%S+)'),
+    name=data:gsub('(http%S+)',''):gsub(' ',''),
+    url=data:match('(http%S+)')
+  }
+  CardImporter.call('Importer', t)
+end
 
 function round(num, numDecimalPlaces)
   local mult = 10^(numDecimalPlaces or 0)
