@@ -8,11 +8,23 @@ CardImporterGUID = "d936a8"
 CardImporter = nil
 DrafterGUID = "488f9f"
 Drafter = nil
+ph = {
+  White = "f715be",
+  Brown = "54e892",
+  Red = "d7f275",
+  Orange = "f74c7c",
+  Yellow = "8a6ab6",
+  Green = "e4ec3e",
+  Teal = "397573",
+  Blue = "004d93",
+  Purple = "322ee6",
+  Pink = "8c5be7",
+}
 
 function onload()
   self.addContextMenuItem("Setup", setup)
-  self.addContextMenuItem("Circle", circleColor)
-  self.addContextMenuItem("Spawn Booster", spawnSet)
+  --self.addContextMenuItem("Circle", circleColor)
+  --self.addContextMenuItem("Spawn Booster", spawnSet)
   self.setPosition({0, 0.75, 0})
   self.setRotation({0, 0, 0})
   self.setScale({2,1,2})
@@ -102,7 +114,7 @@ function circlePoint(i)
   }
 end
 
-function setMats(c)
+function setMats(c) -- Ammount of mats
   ammount = c -- How many mats Max:10
   if ammount == 0 then return end
   mats = Player.getColors()
@@ -119,10 +131,26 @@ function setup()
   if #ply > 0 then
     --positionSeat(5,ply)
   return end 
+  
 
   --obj = spawnZone(Player["White"])
   mats = getSeatedPlayers()
   setMats(ammount)
+
+  
+  for i,x in pairs(Player.getColors()) do
+    for c,n in pairs(mats) do
+      if x == n  then
+      else
+        if x == "Grey" or x == "Black" then
+        else
+          print(x, ph[x])
+          getObjectFromGUID(ph[x]).destruct()
+        end
+      end
+    end 
+  end
+
  --Spawns everything
   for i,v in pairs(mats) do 
     --Spawns stuff
@@ -202,23 +230,41 @@ function spawnSet() --Spawns a set
   pos.x = pos.x + 3
   local p = getSeatedPlayers()[1]
   local data = "set=neo r=c c="
-  for i=0,5 do
-    data = "-t%3Abasic+in%3Abooster+set%3A"..set.."+r%3Ac+c%3A"
-    if i == 0 then
+  for i=0,10 do
+    data = "-t%3Aland+in%3Abooster+set%3A"..set.."+-is%3Adoublefaced+r%3Ac+c%3A"
+    if i == 0 then      -- Common White
       data = data .. "w"
-    elseif i == 1 then
+    elseif i == 1 then  -- Common Blue
       data = data .. "u"
-    elseif i == 2 then
+    elseif i == 2 then  -- Common Black
       data = data .. "b"
-    elseif i == 3 then
+    elseif i == 3 then  -- Common Red
       data = data .. "r"
-    elseif i == 4 then
+    elseif i == 4 then  -- Common Green
       data = data .. "g"
-    elseif i == 5 then
+    elseif i == 5 then  -- Common Colorless
       data = data .. "c"
+    elseif i == 6 then  -- UnCommon
+      data = "-t%3Abasic+in%3Abooster+set%3A"..set.."+-is%3Adoublefaced+r%3Au"
+    elseif i == 7 then  -- Rare
+      data = "-t%3Abasic+in%3Abooster+set%3A"..set.."+r%3Ar"
+    elseif i == 8 then  -- Mythic
+      data = "-t%3Abasic+in%3Abooster+set%3A"..set.."+r%3Am"
+    elseif i == 9 then  -- Special
+      data = "set%3A"..set.."+is%3Adoublefaced+(r%3Ac+or+ru)"
+    elseif i == 10 then -- Lands
+      data = "set%3A"..set.."+t%3Aland+r%3Ac+-t%3Abasic"
+    elseif i == 11 then -- Foil Commons
+      data = "set%3A"..set.."+is%3Ashowcase+r%3Ac"
+    elseif i == 12 then -- Foil Uncommon
+      data = "set%3A"..set.."+is%3Ashowcase+r%3Au"
+    elseif i == 13 then -- Foil Rare
+      data = "set%3A"..set.."+is%3Ashowcase+r%3Ar"
+    elseif i == 14 then -- Foil Mythic
+      data = "set%3A"..set.."+is%3Ashowcase+r%3Am"
     end
     --pos.x = pos.x + 2.5
-    zon = getObjectFromGUID(zones[i+1])
+    zon = getObjectFromGUID(zones[i+2])
     pos = zon.getPosition()
     searchScryfall(data,pos)
   end
@@ -370,7 +416,7 @@ function spawnZone(p)
  ]]
   obj.setLuaScript(lua)
   --obj.call('fixPosition')
-  --obj.interactable = false
+  obj.interactable = false
   
   obj.setName(p.color .. " zone")
   return obj
@@ -476,7 +522,6 @@ function spawnExtras(p)
   local thirdHand = spawnObject(
     {
       type              = "HandTrigger",
-      FogColor             = p.color,
       position          = {x= 5 -16, y=3.5, z= -22 + 5.65},
       scale             = {x= 9.25, y=6, z=2},
       rotation          = {x=0,y=90,z=0},
@@ -487,6 +532,41 @@ function spawnExtras(p)
   )
   thirdHand.setValue(p.color)
   table.insert(extras, thirdHand)
+
+  local fog = spawnObject(
+    {
+      type              = "FogOfWarTrigger",
+      position          = {x= 0, y=3.5, z= 0},
+      scale             = {x= 43, y=6, z=27},
+      rotation          = {x=0,y=90,z=0},
+      sound             = false,
+      snap_to_grid      = true,
+      ignore_fog_of_war	= true
+    }
+  )
+  fog.setValue(p.color)
+  fog.setLuaScript(
+    [[
+      function onload()
+        local lc = stringColorToRGB("]]..p.color..[[")
+        lc.r = lc.r + 0.4
+        lc.g = lc.g + 0.4
+        lc.b = lc.b + 0.4
+        self.createButton({ 
+          click_function = 'killMe',
+          label = '',
+          tooltip = 'Delete fog',
+          function_owner = self, 
+          color = { r= lc.r, b= lc.b, g=lc.g },
+          position = {-0.46, 0.5, 0.45},rotation = {0, 180, 0},
+          width = 15,
+          height = 25,
+          font_size = 10})
+      end
+      function killMe() self.destruct() end
+    ]]
+  )
+  table.insert(extras, fog)
 
   return extras
 end
@@ -937,7 +1017,7 @@ end
 
 --Old
 
-function circleColor()
+function circleColor() -- Spawns Hand Trays in a circle
   clearPly()
   sx,sy = 10,15 -- size of tray
   local x, y, r = 0, 0, 30 -- offset x, offset y, radious
